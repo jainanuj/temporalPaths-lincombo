@@ -33,20 +33,6 @@ void Graph::transform(){
 	Vin[e.v].insert(e.t+e.w);
 	Vout[e.u].insert(e.t);
    }
-
-   /*for debug --> verified*/
-   /*for(int i=0; i<V; i++){
-	cout << "node " << i << " :" << endl;
-	cout << "Vin: " << endl;
-	for(int tt : Vin[i])
-	   cout << tt << ", "; 
-	cout << endl;
-	cout << "Vout: " << endl;
-	for(int tt : Vout[i])
-	   cout << tt << ", "; 
-	cout << endl; 
-   }*/
-   /***********/
    
    set <int>::iterator it; 
    //two maps to map (u, t) in Vin/Vout to their corresponding IDs in the transformed graph
@@ -72,26 +58,6 @@ void Graph::transform(){
 	}
    }
 
-   /*for debugging --> verified*/
-   //check the validity of the node_list
-   /*for(int i=0; i<node_list.size(); i++){
-	cout << "new index: " << i << endl; 
-	cout << "u: " << node_list[i].u << ", t: " << node_list[i].t << ", "; 
-	if(node_list[i].isVin) cout << "Vin" << endl;
-	else cout << "Vout" << endl; 
-   }
-   //now check the validity of the maps
-   map<pair<int, int>, int>::iterator m_it; 
-   cout << "inMap content:" << endl; 
-   for(m_it=inMap.begin(); m_it!=inMap.end(); m_it++){ 
-	cout << "key: (u: " << (*m_it).first.first << ", t: " << (*m_it).first.second << ") , value (newID): " << (*m_it).second << endl; 
-   }
-   cout << "outMap content:" << endl; 
-   for(m_it=outMap.begin(); m_it!=outMap.end(); m_it++){
-	cout << "key: (u: " << (*m_it).first.first << ", t: " << (*m_it).first.second << ") , value (newID): " << (*m_it).second << endl; 
-   }*/
-   /***************/
-
    adj_list.resize(index); 
 
    //edge creation step a:
@@ -114,10 +80,6 @@ void Graph::transform(){
 	}
    }
 
-   /*for debugging*/
-   //print_adjList();
-   /***************/
-
    //edge creation step b:
    set<int>::iterator it2; 
    for(int i=0; i<V; i++){
@@ -136,10 +98,6 @@ void Graph::transform(){
 	   it2++;
       }
    }
-
-   /*for debugging*/
-   //print_adjList();
-   /***************/
 
    //edge creation step c: 
    for(Edge e : edge_list){
