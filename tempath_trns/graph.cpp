@@ -14,6 +14,7 @@ Graph::Graph(const char* filePath)
     //added by sanaz:
     Vin.resize(V);
     Vout.resize(V);
+    distances.resize(V); 
     //---------------
 	
 	Edge e; 
@@ -30,11 +31,11 @@ Graph::Graph(const char* filePath)
 void Graph::transform(){
    for(Edge e : edge_list){
 	//initially set all the newIDs (indices in the transformed graph) to -1
-	Vin[e.v].insert(e.t+e.w);
-	Vout[e.u].insert(e.t);
+	Vin[e.v].insert(make_pair(e.t+e.w, -1));
+	Vout[e.u].insert(make_pair(e.t, -1));
    }
    
-   set <int>::iterator it; 
+   set <pair<int, int>>::iterator it; 
    //two maps to map (u, t) in Vin/Vout to their corresponding IDs in the transformed graph
    map<pair<int, int>, int> inMap;
    map<pair<int, int>, int> outMap;
@@ -43,17 +44,19 @@ void Graph::transform(){
    int t; 
    for(int i=0; i<V; i++){
 	for(it=Vin[i].begin(); it!=Vin[i].end(); it++){
-	  t = *it;
+	  t = it->first;
 	  //tmpNode = new Node(i, t, true);
           Node tmpNode(i, t, true); 
 	  node_list.push_back(tmpNode);
+	  it->second = index; 
 	  inMap[make_pair(i, t)] = index++;
 	}
 	for(it=Vout[i].begin(); it!=Vout[i].end(); it++){
-	  t = *it;
+	  t = it->first;
 	  //tmpNode = new Node(i, t, false);
 	  Node tmpNode(i, t, false); 
 	  node_list.push_back(tmpNode);
+	  it->second = index; 
 	  outMap[make_pair(i, t)] = index++;
 	}
    }
@@ -61,39 +64,39 @@ void Graph::transform(){
    adj_list.resize(index); 
 
    //edge creation step a:
-   set <int>::reverse_iterator rit;
-   set <int>::iterator tmp_it;
+   set <pair<int, int>>::reverse_iterator rit;
+   set <pair<int, int>>::iterator tmp_it;
    unordered_set<int> matched; //t value of Vout[i] nodes that are already matched
    for(int i=0; i<V; i++){ 
         matched.clear();
 	//iterate over Vin[i] in descending order of t (reverse)
 	for(rit = Vin[i].rbegin(); rit != Vin[i].rend(); rit++){ 
-	   int tIn = *rit; 
-	   tmp_it = Vout[i].lower_bound(tIn); //the first item that doesn't go before (t, newID)
+	   int tIn = rit->first; 
+	   tmp_it = Vout[i].lower_bound(*rit); //the first item that doesn't go before (t, newID) (*rit is a pair)
            if(tmp_it == Vout[i].end()) 
 		continue;
-	   int tOut = *tmp_it; 
+	   int tOut = tmp_it->first; 
 	   if(matched.find(tOut) == matched.end()){ 
 		matched.insert(tOut);
-	   	adj_list[inMap[make_pair(i, tIn)]].push_back(make_pair(outMap[make_pair(i, tOut)], 0));
+	   	adj_list[rit->second].push_back(make_pair(tmp_it->second, 0));
 	   }
 	}
    }
 
    //edge creation step b:
-   set<int>::iterator it2; 
+   set<pair<int, int>>::iterator it2; 
    for(int i=0; i<V; i++){
       it = it2 = Vin[i].begin(); 
       if(it2!=Vin[i].end()) it2++;
       while(it2 != Vin[i].end()){  
-	   adj_list[inMap[make_pair(i, *it)]].push_back(make_pair(inMap[make_pair(i, *it2)], 0));
+	   adj_list[it->second].push_back(make_pair(it2->second, 0));
 	   it++;
 	   it2++;
       }
       it = it2 = Vout[i].begin();
       if(it2!=Vout[i].end()) it2++;
       while(it2 != Vout[i].end()){ 
-	   adj_list[outMap[make_pair(i, *it)]].push_back(make_pair(outMap[make_pair(i, *it2)], 0));
+	   adj_list[it->second].push_back(make_pair(it2->second, 0));
 	   it++;
 	   it2++;
       }
@@ -171,23 +174,57 @@ void Graph::run_earliest_arrival()
 	
 	for(int i = 0 ;i < sources.size() ;i ++)
     { 
-    	//initial_ds_ea();
+    	//modified by sanaz:
+	for(int j=0; j<V; j++)
+	  distances[j] = infinity; 
+	distances[sources[i]] = 0; 
+	//------------------
     	earliest_arrival(sources[i]);
     }
 	
 	print_avg_time();
 }
 
+//modified by sanaz
 void Graph::earliest_arrival(int source)
 {
-	Timer t;
-	t.start();
-		
-	//TBD
+    Timer t;
+    t.start();
 	
-	t.stop();
-	time_sum += t.GetRuntime();
+    /*define and initialize data structures*/	
+    vector<bool> visited(node_list.size(), false);
+    vector<int> distances(V, infinity);
+    distances[source] = 0; 
+    queue<int> Q; 
+
+    /*initializing Q*/
+    set<pair<int, int>>::iterator it; 
+    for(it = Vout[source].begin(); it != Vout[source].end(); it++){
+	if(it->first >= t_start && it->first <= t_end){
+	   visited[it->second] = true; //it->first: t, it->second: newID
+           Q.push(it->second);
+        }
+    }
+
+    while(!Q.empty()){
+	int node = Q.top(); 
+	Q.pop();
+	for(auto neighbor=adj_list[node].begin(); neighbor!=adj_list[node].end(); neighbor++){
+	    int nID = neighbor->first; 
+	    Node neiNode = node_list[nID];
+	    if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
+		visited[nID] = true; 
+		Q.push(nID);
+		if(neiNode.isVin == true && neiNode.t < distances[neiNode.u])
+		   distances[neiNode.u] = neiNode.t; 
+	    }
+	}
+    }
+	
+    t.stop();
+    time_sum += t.GetRuntime();
 }
+//-----------------
 
 void Graph::run_latest_departure()
 {

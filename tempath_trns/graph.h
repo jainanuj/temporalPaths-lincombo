@@ -9,10 +9,10 @@
 #include <queue>
 #include <iostream>
 //added by sanaz
-//#include <unordered_map>
 #include <map>
 #include <unordered_set>
 #include <utility> //for std::pair 
+#include <queue>
 //--------------
 #include "Timer.h"
 
@@ -99,10 +99,11 @@ public:
 	//vector < set < pair< int, int > > > st_timepair; // arrival time, shortest distance 
 
     //added by sanaz
-    vector<set<int>> Vin; //for each node u contains Vin(u)
-    vector<set<int>> Vout; //for each node u contains Vout(u)
+    vector<set<pair<int, int>>> Vin; //for each node u contains Vin(u) in form of (t, newID) pairs
+    vector<set<pair<int, int>>> Vout; //for each node u contains Vout(u) in form of (t, newID) pairs
     vector<Node> node_list; //a list of 'Node's kept for reference
     vector<vector<pair<int, int>>> adj_list; //<node index(int the transformed graph) --> list<neighbor index, weight>> 
+    vector<int> distances; 
     //--------------
 };
 
