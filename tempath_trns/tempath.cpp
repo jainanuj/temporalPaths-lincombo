@@ -15,7 +15,9 @@ int main(int argc, char* argv[]){
     
     //added by sanaz:
     g.transform();
-    g.print_adjList(); //for debugging  
+    //g.print_adjList(); //for debugging  
+    g.initial_query("../init1.txt"); //for debugging
+    g.run_earliest_arrival(); //for debugging 
     //---------------
     
     /*g.initial_query();

@@ -29,74 +29,89 @@ Graph::Graph(const char* filePath)
 
 //added by sanaz
 void Graph::transform(){
+   vector<set<int>> Tin; //the set of distinct in times for each node
+   vector<set<int>> Tout; //the set of distinct out times for each node
+   Tin.resize(V);
+   Tout.resize(V); 
    for(Edge e : edge_list){
 	//initially set all the newIDs (indices in the transformed graph) to -1
-	Vin[e.v].insert(make_pair(e.t+e.w, -1));
-	Vout[e.u].insert(make_pair(e.t, -1));
+	Tin[e.v].insert(e.t+e.w);
+	Tout[e.u].insert(e.t);
    }
-   
-   set <pair<int, int>>::iterator it; 
-   //two maps to map (u, t) in Vin/Vout to their corresponding IDs in the transformed graph
+
+   set <int>::iterator it; 
+   //two maps to map (u, t) in Tin/Tout to their corresponding IDs in the transformed graph
    map<pair<int, int>, int> inMap;
    map<pair<int, int>, int> outMap;
    int index = 0; 
    //Node tmpNode; 
    int t; 
    for(int i=0; i<V; i++){
-	for(it=Vin[i].begin(); it!=Vin[i].end(); it++){
-	  t = it->first;
+	for(it=Tin[i].begin(); it!=Tin[i].end(); it++){
+	  t = *it;
 	  //tmpNode = new Node(i, t, true);
           Node tmpNode(i, t, true); 
 	  node_list.push_back(tmpNode);
-	  it->second = index; 
+	  Vin[i].insert(index);
 	  inMap[make_pair(i, t)] = index++;
 	}
-	for(it=Vout[i].begin(); it!=Vout[i].end(); it++){
-	  t = it->first;
+	for(it=Tout[i].begin(); it!=Tout[i].end(); it++){
+	  t = *it;
 	  //tmpNode = new Node(i, t, false);
 	  Node tmpNode(i, t, false); 
 	  node_list.push_back(tmpNode);
-	  it->second = index; 
+	  Vout[i].insert(index);
 	  outMap[make_pair(i, t)] = index++;
 	}
    }
-
    adj_list.resize(index); 
 
+   /*for debugging*/
+   /*for(int i=0; i<V; i++){
+      cout << "for node " << i << ":" << endl;
+      cout << "vin:" << endl;
+      for(int idx : Vin[i])
+	cout << "(" << node_list[idx].u << ", " << node_list[idx].t << ")" << endl;
+      cout << "vout:" << endl;
+      for(int idx : Vout[i])
+	cout << "(" << node_list[idx].u << ", " << node_list[idx].t << ")" << endl;
+   }*/
+   /***************/
+
    //edge creation step a:
-   set <pair<int, int>>::reverse_iterator rit;
-   set <pair<int, int>>::iterator tmp_it;
-   unordered_set<int> matched; //t value of Vout[i] nodes that are already matched
+   set <int>::reverse_iterator rit;
+   set <int>::iterator tmp_it;
+   unordered_set<int> matched; //t value of Tout[i] nodes that are already matched
    for(int i=0; i<V; i++){ 
         matched.clear();
-	//iterate over Vin[i] in descending order of t (reverse)
-	for(rit = Vin[i].rbegin(); rit != Vin[i].rend(); rit++){ 
-	   int tIn = rit->first; 
-	   tmp_it = Vout[i].lower_bound(*rit); //the first item that doesn't go before (t, newID) (*rit is a pair)
-           if(tmp_it == Vout[i].end()) 
+	//iterate over Tin[i] in descending order of t (reverse)
+	for(rit = Tin[i].rbegin(); rit != Tin[i].rend(); rit++){ 
+	   int tIn = *rit; 
+	   tmp_it = Tout[i].lower_bound(tIn); //the first item that doesn't go before (t, newID)
+           if(tmp_it == Tout[i].end()) 
 		continue;
-	   int tOut = tmp_it->first; 
+	   int tOut = *tmp_it; 
 	   if(matched.find(tOut) == matched.end()){ 
 		matched.insert(tOut);
-	   	adj_list[rit->second].push_back(make_pair(tmp_it->second, 0));
+	   	adj_list[inMap[make_pair(i, tIn)]].push_back(make_pair(outMap[make_pair(i, tOut)], 0));
 	   }
 	}
    }
 
    //edge creation step b:
-   set<pair<int, int>>::iterator it2; 
+   set<int>::iterator it2; 
    for(int i=0; i<V; i++){
-      it = it2 = Vin[i].begin(); 
-      if(it2!=Vin[i].end()) it2++;
-      while(it2 != Vin[i].end()){  
-	   adj_list[it->second].push_back(make_pair(it2->second, 0));
+      it = it2 = Tin[i].begin(); 
+      if(it2!=Tin[i].end()) it2++;
+      while(it2 != Tin[i].end()){  
+	   adj_list[inMap[make_pair(i, *it)]].push_back(make_pair(inMap[make_pair(i, *it2)], 0));
 	   it++;
 	   it2++;
       }
-      it = it2 = Vout[i].begin();
-      if(it2!=Vout[i].end()) it2++;
-      while(it2 != Vout[i].end()){ 
-	   adj_list[it->second].push_back(make_pair(it2->second, 0));
+      it = it2 = Tout[i].begin();
+      if(it2!=Tout[i].end()) it2++;
+      while(it2 != Tout[i].end()){ 
+	   adj_list[outMap[make_pair(i, *it)]].push_back(make_pair(outMap[make_pair(i, *it2)], 0));
 	   it++;
 	   it2++;
       }
@@ -107,7 +122,6 @@ void Graph::transform(){
 	adj_list[outMap[make_pair(e.u, e.t)]].push_back(make_pair(inMap[make_pair(e.v, e.t+e.w)], e.w));
    }
 }
-
 void Graph::print_adjList(){  
    cout << "(u1, t1, Vin1/Vout1) (u2, t2, Vin2/Vout2) W" << endl; 
 
@@ -198,16 +212,16 @@ void Graph::earliest_arrival(int source)
     queue<int> Q; 
 
     /*initializing Q*/
-    set<pair<int, int>>::iterator it; 
+    set<int>::iterator it; 
     for(it = Vout[source].begin(); it != Vout[source].end(); it++){
-	if(it->first >= t_start && it->first <= t_end){
-	   visited[it->second] = true; //it->first: t, it->second: newID
-           Q.push(it->second);
+	if(node_list[*it].t >= t_start && node_list[*it].t <= t_end){
+	   visited[*it] = true; //it->first: t, it->second: newID
+           Q.push(*it);
         }
     }
 
     while(!Q.empty()){
-	int node = Q.top(); 
+	int node = Q.front(); 
 	Q.pop();
 	for(auto neighbor=adj_list[node].begin(); neighbor!=adj_list[node].end(); neighbor++){
 	    int nID = neighbor->first; 
@@ -220,6 +234,13 @@ void Graph::earliest_arrival(int source)
 	    }
 	}
     }
+
+    /*for debugging*/
+    /*cout << "distances:" << endl;
+    for(int i=0; i<V; i++)
+	cout << distances[i] << ", "; 
+    cout << endl; */
+    /***************/
 	
     t.stop();
     time_sum += t.GetRuntime();
