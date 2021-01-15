@@ -104,6 +104,7 @@ public:
     vector<Node> node_list; //a list of 'Node's kept for reference
     vector<vector<pair<int, int>>> adj_list; //<node index(int the transformed graph) --> list<neighbor index, weight>> 
     vector<int> distances; 
+    vector<vector<int>> rev_adjList; //adjacency list with reversed edges used in "latest" function
     //--------------
 };
 

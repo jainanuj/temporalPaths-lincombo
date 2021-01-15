@@ -66,18 +66,6 @@ void Graph::transform(){
    }
    adj_list.resize(index); 
 
-   /*for debugging*/
-   /*for(int i=0; i<V; i++){
-      cout << "for node " << i << ":" << endl;
-      cout << "vin:" << endl;
-      for(int idx : Vin[i])
-	cout << "(" << node_list[idx].u << ", " << node_list[idx].t << ")" << endl;
-      cout << "vout:" << endl;
-      for(int idx : Vout[i])
-	cout << "(" << node_list[idx].u << ", " << node_list[idx].t << ")" << endl;
-   }*/
-   /***************/
-
    //edge creation step a:
    set <int>::reverse_iterator rit;
    set <int>::iterator tmp_it;
@@ -120,6 +108,14 @@ void Graph::transform(){
    //edge creation step c: 
    for(Edge e : edge_list){
 	adj_list[outMap[make_pair(e.u, e.t)]].push_back(make_pair(inMap[make_pair(e.v, e.t+e.w)], e.w));
+   }
+
+   //filling up the reverse adjacency list:
+   rev_adjList.resize(index);
+   for(int i=0; i<index; i++){
+	for(auto neigh=adj_list[i].begin(); neigh!=adj_list[i].end(); neigh++){
+	    rev_adjList[neigh->first].push_back(i); 
+        }
    }
 }
 void Graph::print_adjList(){  
@@ -186,12 +182,12 @@ void Graph::run_earliest_arrival()
 {
 	time_sum=0;
 	
-	for(int i = 0 ;i < sources.size() ;i ++)
+	for(int i = 0 ;i < sources.size(); i ++)
     { 
     	//modified by sanaz:
 	for(int j=0; j<V; j++)
-	  distances[j] = infinity; 
-	distances[sources[i]] = 0; 
+	  distances[j] = t_end+1; 
+	distances[sources[i]] = t_start; 
 	//------------------
     	earliest_arrival(sources[i]);
     }
@@ -207,8 +203,6 @@ void Graph::earliest_arrival(int source)
 	
     /*define and initialize data structures*/	
     vector<bool> visited(node_list.size(), false);
-    vector<int> distances(V, infinity);
-    distances[source] = 0; 
     queue<int> Q; 
 
     /*initializing Q*/
@@ -253,7 +247,11 @@ void Graph::run_latest_departure()
 	
 	for(int i = 0 ;i < sources.size() ;i ++)
     { 
-    	//initial_ds_ld();
+    	//modified by sanaz:
+	for(int j=0; j<V; j++)
+	  distances[j] = t_start-1; 
+	distances[sources[i]] = t_end; 
+	//------------------
     	latest_departure(sources[i]);
     }
 	
@@ -262,13 +260,46 @@ void Graph::run_latest_departure()
 
 void Graph::latest_departure(int source)
 {
-	Timer t;
-	t.start();
+    Timer t;
+    t.start();
 	
-	//TBD
+    /*define and initialize data structures*/	
+    vector<bool> visited(node_list.size(), false);
+    queue<int> Q; 
+
+    /*initializing Q*/
+    set<int>::iterator it; 
+    for(it = Vin[source].begin(); it != Vin[source].end(); it++){
+	if(node_list[*it].t >= t_start && node_list[*it].t <= t_end){
+	   visited[*it] = true; //it points to the index of the node
+           Q.push(*it);
+        }
+    }
+
+    while(!Q.empty()){
+	int node = Q.front(); 
+	Q.pop();
+	for(auto neighbor=rev_adjList[node].begin(); neighbor!=rev_adjList[node].end(); neighbor++){
+	    int nID = *neighbor; 
+	    Node neiNode = node_list[nID];
+	    if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
+		visited[nID] = true; 
+		Q.push(nID);
+		if(neiNode.isVin == false && neiNode.t > distances[neiNode.u])
+		   distances[neiNode.u] = neiNode.t; 
+	    }
+	}
+    }
+
+    /*for debugging*/
+    cout << "distances:" << endl;
+    for(int i=0; i<V; i++)
+	cout << distances[i] << ", "; 
+    cout << endl;
+    /***************/
 	
-	t.stop();
-	time_sum += t.GetRuntime();
+    t.stop();
+    time_sum += t.GetRuntime();
 }
 
 void Graph::run_fastest()
