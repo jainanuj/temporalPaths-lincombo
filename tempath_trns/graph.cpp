@@ -292,10 +292,10 @@ void Graph::latest_departure(int source)
     }
 
     /*for debugging*/
-    cout << "distances:" << endl;
+    /*cout << "distances:" << endl;
     for(int i=0; i<V; i++)
 	cout << distances[i] << ", "; 
-    cout << endl;
+    cout << endl;*/
     /***************/
 	
     t.stop();
@@ -308,7 +308,11 @@ void Graph::run_fastest()
 	
 	for(int i = 0 ;i < sources.size() ;i ++)
     { 
-    	//initial_ds_f();
+    	//modified by sanaz:
+	for(int j=0; j<V; j++)
+	  distances[j] = t_end+1; 
+	distances[sources[i]] = 0; 
+	//------------------
     	fastest(sources[i]);
     }
     
@@ -316,16 +320,54 @@ void Graph::run_fastest()
 
 }
 
+//modified by sanaz
 void Graph::fastest(int source)
 {
-	Timer t;
-	t.start();
+    Timer t;
+    t.start();
 		
-	//TBD
+    /*define and initialize data structures*/	
+    vector<pair<int, int>> startPoints;
+    for(int i : Vout[source])
+	if(node_list[i].t >= t_start && node_list[i].t <= t_end)
+	  startPoints.push_back(make_pair(i, node_list[i].t)); 
+    sort(startPoints.begin( ), startPoints.end( ), [ ](const pair<int, int>& p1, const pair<int, int>& p2){
+       return p1.second > p2.second;
+    });
+    vector<bool> visited(node_list.size(), false);
+    queue<int> Q; 
+
+    for(auto it = startPoints.begin(); it != startPoints.end(); it++){
+	int ts = node_list[it->first].t;
+        visited[it->first] = true; 
+        Q.push(it->first);
+	while(!Q.empty()){
+	    int node = Q.front(); 
+	    Q.pop();
+	    for(auto neighbor=adj_list[node].begin(); neighbor!=adj_list[node].end(); neighbor++){
+		int nID = neighbor->first; 
+		Node neiNode = node_list[nID];
+		if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
+		   visited[nID] = true; 
+		   Q.push(nID);
+		   if(neiNode.isVin == true && (neiNode.t-ts) < distances[neiNode.u])
+		      distances[neiNode.u] = (neiNode.t-ts); 
+		}
+	    }
+	}
+     }
+
+    /*for debugging*/
+    cout << "distances:" << endl;
+    for(int i=0; i<V; i++)
+	cout << distances[i] << ", "; 
+    cout << endl; 
+    /***************/	
 	
-	t.stop();
-	time_sum += t.GetRuntime();
+    t.stop();
+    time_sum += t.GetRuntime();
 }
+//-----------------
 
 void Graph::run_shortest()
 {
