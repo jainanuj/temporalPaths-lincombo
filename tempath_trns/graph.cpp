@@ -358,10 +358,10 @@ void Graph::fastest(int source)
      }
 
     /*for debugging*/
-    cout << "distances:" << endl;
+    /*cout << "distances:" << endl;
     for(int i=0; i<V; i++)
 	cout << distances[i] << ", "; 
-    cout << endl; 
+    cout << endl;*/
     /***************/	
 	
     t.stop();
@@ -385,13 +385,53 @@ void Graph::run_shortest()
 
 void Graph::shortest(int source)
 {
-	Timer t;
-	t.start();
+    Timer t;
+    t.start();
 
-	//TBD		
+    /*defining and initializing data structures*/
+    typedef pair<int, int> iPair; 	
+    priority_queue< iPair, vector <iPair> , greater<iPair> > pq; //pairs of <distance, id> sorted in increasing order of distance
+    vector<int> local_dist(adj_list.size(), t_end+1); //distance vector for the nodes in the transformed graph
+    vector<bool> done(adj_list.size(), false); //keeping track of the nodes whose distance is established
+    
+    for(auto it=Vout[source].begin(); it!=Vout[source].end(); it++)
+	if(node_list[*it].t >= t_start && node_list[*it].t <= t_end){
+	   pq.push(make_pair(0, *it));
+	   local_dist[*it] = 0; 
+	}
+
+    while(!pq.empty()){
+	int node = pq.top().second; 
+	if(done[node]) 
+	   continue; 
+	done[node] = true; 
+	for(auto neigh=adj_list[node].begin(); neigh!=adj_list[node].end(); neigh++){
+	   int neiID = neigh->first; 
+	   if(!done[neiID] && node_list[neiID].t >= t_start && node_list[neiID].t <= t_end){
+		int newDist = local_dist[node]+neigh->second; 
+		if(newDist < local_dist[neiID]){
+		   local_dist[neiID] = newDist; 
+		   pq.push(make_pair(newDist, neiID)); 
+		}
+	   }
+  	}
+    }
+
+    for(int i=0; i<adj_list.size(); i++)
+	if(node_list[i].isVin && node_list[i].t >= t_start && node_list[i].t <= t_end){
+	   int u = node_list[i].u; 
+	   distances[u] = min(distance[u], local_dist[i]);
+	}
+
+    /*for debugging*/
+    /*cout << "distances:" << endl;
+    for(int i=0; i<V; i++)
+	cout << distances[i] << ", "; 
+    cout << endl;*/
+    /***************/
 	
-	t.stop();
-	time_sum += t.GetRuntime();
+    t.stop();
+    time_sum += t.GetRuntime();
 }
 
 void Graph::print_avg_time()
