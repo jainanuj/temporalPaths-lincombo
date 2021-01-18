@@ -17,9 +17,11 @@ int main(int argc, char* argv[]){
     g.transform();
     //g.print_adjList(); //for debugging  
     g.initial_query("../init1.txt"); //for debugging
+    //g.initial_query(); 
     //g.run_earliest_arrival(); //for debugging 
     //g.run_latest_departure(); //for debugging
-    g.run_fastest(); //for debugging
+    //g.run_fastest(); //for debugging
+    g.run_shortest(); //for debugging
     //---------------
     
     /*g.initial_query();
@@ -43,7 +45,7 @@ int main(int argc, char* argv[]){
     }
 	
 	cout<<"hello world!!!" <<endl; */
-      cout << "here" << endl; 
+      //cout << "here" << endl; 
 	
 	return 0;
 }

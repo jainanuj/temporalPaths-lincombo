@@ -171,11 +171,12 @@ void Graph::initial_query(const char* filePath)
 	for(int i = 0 ;i < 100 ;i ++)
     {
     	x=fscanf(file,"%d",&s);
+	//cout << "s: " << s << ", x: " << x << endl; 
     //	int y;
     //	x=fscanf(file,"%d%d",&s, &y);
         sources.push_back(s);
     }
-
+    
 }
 
 void Graph::run_earliest_arrival()
@@ -371,11 +372,14 @@ void Graph::fastest(int source)
 
 void Graph::run_shortest()
 {
-	time_sum=0;
+    time_sum=0;
 	
-	for(int i = 0 ;i < sources.size() ;i ++)
+    for(int i = 0 ;i < sources.size() ;i ++)
     { 
-    	//initial_ds_s();
+    	//modified by sanaz:
+	for(int j=0; j<V; j++)
+	  distances[j] = t_end+1; 
+	distances[sources[i]] = 0; 
     	shortest(sources[i]);
     }
     
@@ -400,34 +404,39 @@ void Graph::shortest(int source)
 	   local_dist[*it] = 0; 
 	}
 
+    cout << "here" << endl; 
+
     while(!pq.empty()){
 	int node = pq.top().second; 
+	pq.pop(); 
 	if(done[node]) 
 	   continue; 
 	done[node] = true; 
 	for(auto neigh=adj_list[node].begin(); neigh!=adj_list[node].end(); neigh++){
-	   int neiID = neigh->first; 
+	   int neiID = neigh->first;  
 	   if(!done[neiID] && node_list[neiID].t >= t_start && node_list[neiID].t <= t_end){
-		int newDist = local_dist[node]+neigh->second; 
+		int newDist = local_dist[node]+neigh->second;
 		if(newDist < local_dist[neiID]){
 		   local_dist[neiID] = newDist; 
-		   pq.push(make_pair(newDist, neiID)); 
+		   pq.push(make_pair(newDist, neiID));  
 		}
 	   }
   	}
     }
 
+    cout << "here2" << endl;
+
     for(int i=0; i<adj_list.size(); i++)
 	if(node_list[i].isVin && node_list[i].t >= t_start && node_list[i].t <= t_end){
 	   int u = node_list[i].u; 
-	   distances[u] = min(distance[u], local_dist[i]);
+	   distances[u] = min(distances[u], local_dist[i]);
 	}
 
     /*for debugging*/
-    /*cout << "distances:" << endl;
+    cout << "distances:" << endl;
     for(int i=0; i<V; i++)
 	cout << distances[i] << ", "; 
-    cout << endl;*/
+    cout << endl;
     /***************/
 	
     t.stop();
