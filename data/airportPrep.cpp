@@ -4,6 +4,7 @@
 #include <sstream> 
 #include <fstream>
 #include <time.h> /* time_t, struct tm, time, gmtime */
+#include <cstddef>  /*std::size_t*/
 using namespace std; 
 
 struct Edge{
@@ -82,28 +83,54 @@ void process(vector<string> row){
     if(row[4].size() < 6) return; //not valid time string
     int hh, mm;
     struct tm depStr = {0};
-    //cout << "row[4]: " << row[4] << endl;
-    string hhStr = row[4].substr(1,2);
-    cout << "hhStr: " << hhStr << endl;
-    string mmStr = row[4].substr(3,2);
-    cout << "mmStr: " << mmStr << endl; 
     hh = stoi(row[4].substr(1,2));
     mm = stoi(row[4].substr(3,2));
     depStr.tm_hour = hh;
     depStr.tm_min = mm;
-    cout << "hh: " << hh << ", mm: " << mm << endl; 
+
+    /*also add year-month-day-daylight saving information
+     Time zone differnce may alter the day*/
+    string date = row[0]; //FL_DATE
+    if(date.size() < 6) return; //invalid "date" string
+    int year = stoi(date.substr(0, 4));
+    int month = stoi(date.substr(5, 2));
+    int day = stoi(date.substr(8, 2));
+    depStr.tm_year = year; 
+    depStr.tm_mon = month;
+    depStr.tm_mday = day;
+    cout << "year: " << year << ", month: " << month << ", day: " << day << endl; 
+    depStr.tm_isdst = -1; //daylight saving info will be automatically inferred
+     
+    /*change the time zone environment variable*/
+    string timezone = "America/"; //I suppose all the flights are internal
+    string state = row[2].substr(1, row[2].size()-2); //ORIGIN_STATE_NM (it contains "" that should be omitted)
+    
+    /*preprocess the state names with two parts like New York*/
+    size_t found = state.find_first_of(" ");    
+    if(found != string::npos)
+       state[found] = '_';
+    timezone += state;
+
+    cout << "timezone: " << timezone << endl;
+    const char* cstr_TZ = timezone.c_str(); 
+    if(setenv("TZ", cstr_TZ, 1) != 0)
+       cout << "error in setting timezone!" << endl; 
+  
     time_t depLocalTime = mktime(&depStr);
 
     //step2: converting local time to UTC time (time at the GMT timezone)
     struct tm* depUtcTime;
     depUtcTime = gmtime(&depLocalTime);
     cout << "UTC hh: " << depUtcTime->tm_hour << ", UTC mm: " << depUtcTime->tm_min << endl; 
+    cout << "UTC year: " << depUtcTime->tm_year << ", UTC month: " << depUtcTime->tm_mon << ", UTC day: " << depUtcTime->tm_mday << endl; 
 
     /*Add date to the departure time*/
 
     /*Add the row info to the edge list*/
 
     /*Keep track of the node IDs in node list*/
+
+    unsetenv("TZ");
 }
 
 //Just for debugging
