@@ -6,8 +6,9 @@
 #include <sstream> 
 #include <fstream>
 #include <time.h> /* time_t, struct tm, time, gmtime */
-#include <cstddef>  /*std::size_t*/
+#include <cstddef>  /* std::size_t */
 #include <unordered_map>
+#include <algorithm> /* std::sort */
 using namespace std; 
 
 struct Edge{
@@ -20,35 +21,19 @@ struct Edge{
   }
 };
 
+struct edgeSort {
+  bool operator() (Edge e1, Edge e2) { return (e1.t < e2.t);}
+} eSort;
+
 unordered_map<string, string> zoneMap;
+vector<Edge> edgeList;
+unordered_map<int, int> nodeMap;
 
 void process(vector<string> row);
 void printRow(vector<string> row);
 
 int main() 
 {  
-
-/*struct tm calTM; 
-calTM.tm_hour = 9;
-calTM.tm_min = 0;   
-calTM.tm_year = 2021-1900; 
-calTM.tm_mon = 1-1;
-calTM.tm_mday = 1;
-calTM.tm_isdst = -1;
-
-setenv("TZ", "America/California", 1);
-time_t calTime = mktime(&calTM);
-unsetenv("TZ");
-
-struct tm* utcTime;
-utcTime = gmtime(&calTime);
-cout << "UTC hh: " << utcTime->tm_hour << ", UTC mm: " << utcTime->tm_min; 
-cout << ", UTC year: " << utcTime->tm_year << ", UTC month: " << utcTime->tm_mon << ", UTC day: " << utcTime->tm_mday << endl;
- 
-time_t utc_time_t = mktime(utcTime);
-cout << "UTC transformed time: " << ctime(&utc_time_t) << endl;
-return 0; */
-
     /*first deal with the timeZone map*/
     // File pointer 
     fstream fin; 
@@ -66,8 +51,7 @@ return 0; */
         // used for breaking words 
         stringstream ss(line);   
         getline(ss, nameStr, ','); //read the name of the state
-        getline(ss, zoneStr, ','); //read the time zone of the state
-        cout << "nameStr: " << nameStr << ", zoneStr: " << zoneStr << endl; 
+        getline(ss, zoneStr, ','); //read the time zone of the state 
         zoneMap[nameStr] = zoneStr;
     }     
 
@@ -109,16 +93,48 @@ return 0; */
         rowIndex++;
     } 
 
-    //TBD: finalize(edge_list, node_list); -- sort node_ids, then use new IDs starting form 0
-    //TBD: print_sorted(edge_list, out_file); -- sort edge_list in order of t, then print it to the output file
+    /*sort the edgeList in increasing order of t
+    Re-number nodes from 0*/
+    sort(edgeList.begin(), edgeList.end(), eSort);
+
+    unordered_map<int, int>::iterator it; 
+    int newID = 0; 
+    for(int i=0; i<edgeList.size(); i++){
+	//first deal with u
+	it = nodeMap.find(edgeList[i].u);
+	if(it == nodeMap.end()){
+	   nodeMap[edgeList[i].u] = newID;
+	   edgeList[i].u = newID++;
+	}else{
+	   edgeList[i].u = nodeMap[edgeList[i].u];
+	}
+
+	//now deal with v
+	it = nodeMap.find(edgeList[i].v);
+	if(it == nodeMap.end()){
+	   nodeMap[edgeList[i].v] = newID;
+	   edgeList[i].v = newID++;
+	}else{
+	   edgeList[i].v = nodeMap[edgeList[i].v];
+	}
+    }
+
+    /*now write the edgelist to an output file*/
+    ofstream outfile;
+    outfile.open("testFile.txt");
+    if(!outfile.is_open())
+	cout << "error in opening the outfile" << endl;
+
+    outfile << newID << " " << edgeList.size() << endl;
+    for(int i=0; i<edgeList.size(); i++)
+	outfile << edgeList[i].u << " " << edgeList[i].v << " " << edgeList[i].t << " " << edgeList[i].w << endl; 
 
     fin.close();
     return 0;  
 }   
 
 void process(vector<string> row){
-    cout << "at the beginning of the process funciton" << endl;
-    printRow(row); 
+    //printRow(row); 
  
     /*return if number of diverted airport
     landings (DIV_AIRPORT_LANDINGS) is > 0 or if the data is missing*/
@@ -147,8 +163,7 @@ void process(vector<string> row){
     int day = stoi(date.substr(8, 2));
     depStr.tm_year = year; 
     depStr.tm_mon = month;
-    depStr.tm_mday = day;
-    //cout << "year: " << year << ", month: " << month << ", day: " << day << ", hh: " << depStr.tm_hour << ", mm: " << depStr.tm_min << endl; 
+    depStr.tm_mday = day; 
     depStr.tm_isdst = -1; //daylight saving info will be automatically inferred
      
     /*change the time zone environment variable*/
@@ -156,30 +171,42 @@ void process(vector<string> row){
     string state = row[2].substr(1, row[2].size()-2); //ORIGIN_STATE_NM (it contains "" that should be omitted)
     string timezone = zoneMap[state];
     
-    //cout << "timezone: " << timezone << endl;
     const char* cstr_TZ = timezone.c_str(); //the input to setenv() is const cstr* not string
     if(setenv("TZ", cstr_TZ, 1) != 0)
        cout << "error in setting timezone!" << endl; 
   
-    time_t depLocalTime = mktime(&depStr);
- 
-    cout << "the result of turning tm to time_t: " << ctime(&depLocalTime) << endl;
+    time_t depLocalTime = mktime(&depStr); 
+    /*the function ctime() converts time_t* to a human readable string */
+    //cout << "the result of turning tm to time_t: " << ctime(&depLocalTime) << endl;
 
     unsetenv("TZ");
 
     //step2: converting local time to UTC time (time at the GMT timezone)
     struct tm* depUtcTime;
     depUtcTime = gmtime(&depLocalTime);
-    //cout << "UTC hh: " << depUtcTime->tm_hour << ", UTC mm: " << depUtcTime->tm_min; 
-    //cout << ", UTC year: " << depUtcTime->tm_year << ", UTC month: " << depUtcTime->tm_mon << ", UTC day: " << depUtcTime->tm_mday << endl; 
+    /*note: important information contained in lines below. Most importantly: 
+    the tm structure contains month-1 and year-1900. Them maketime() function
+    adds 1 and 1900 to the corresponding values*/
+    /*cout << "UTC hh: " << depUtcTime->tm_hour << ", UTC mm: " << depUtcTime->tm_min; 
+    cout << ", UTC year: " << depUtcTime->tm_year+1900 << ", UTC month: " << depUtcTime->tm_mon+1 << ", UTC day: " << depUtcTime->tm_mday << endl; 
     time_t utc_time_t = mktime(depUtcTime);
-    cout << "UTC time: " << ctime(&utc_time_t) << endl; 
+    cout << "UTC time: " << ctime(&utc_time_t) << endl;*/
 
     /*Add date to the departure time*/
+    long timeStamp = depUtcTime->tm_min + 60*depUtcTime->tm_hour;
+    int yDay = depUtcTime->tm_yday; //number of days since Jan 1st of the same year
+    timeStamp += yDay*20*60; // in minutes
 
     /*Add the row info to the edge list*/
-
-    /*Keep track of the node IDs in node list*/
+    //I take ORIGIN_AIRPORT_ID and DEST_AIRPORT_ID as u and v respectively
+    int u, v, w; 
+    u = stoi(row[1]);
+    v = stoi(row[3]);
+    w = stoi(row[5]);
+    Edge eTmp(u, v, timeStamp, w);
+    edgeList.push_back(eTmp);
+    
+    return;
 }
 
 //Just for debugging
