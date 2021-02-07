@@ -32,8 +32,13 @@ unordered_map<int, int> nodeMap;
 void process(vector<string> row);
 void printRow(vector<string> row);
 
-int main() 
+int main(int argc, char *argv[]) 
 {  
+    if(argc < 2){
+	cout << "Please enter the path to the output file" << endl; 
+	return 0; 
+    }    
+
     /*first deal with the timeZone map*/
     // File pointer 
     fstream fin; 
@@ -121,7 +126,7 @@ int main()
 
     /*now write the edgelist to an output file*/
     ofstream outfile;
-    outfile.open("testFile.txt");
+    outfile.open(argv[1]);
     if(!outfile.is_open())
 	cout << "error in opening the outfile" << endl;
 
@@ -138,14 +143,18 @@ void process(vector<string> row){
  
     /*return if number of diverted airport
     landings (DIV_AIRPORT_LANDINGS) is > 0 or if the data is missing*/
-    if(row[6].size() < 1 || stoi(row[6]) > 0) return;     
+    if(row[6].size() < 1 || stoi(row[6]) > 0) return; 
 
-    /*Unify the time zone of departure time
+    /*remove the other cases of missing data*/
+    if(row[4].size() < 6) return; //not valid departure time string
+    if(row[0].size() < 6) return; //invalid "date" string
+    if(row[1].size() < 1 || row[2].size() <=2 || row[3].size() < 1 || row[5].size() < 1) return; 
+
+    /*part A - Unify the time zone of departure time
     For now I use UTC as the reference zone*/
     
-    //step1: converting string times (DEP_TIME) to actual date objects
-    /*the time string is in the form "hhmm" (quotations are part of the string)*/
-    if(row[4].size() < 6) return; //not valid time string
+    //step1: converting string times (DEP_TIME) to actual date objectsv    
+    /*the departure time string is in the form "hhmm" (quotations are part of the string)*/
     int hh, mm;
     struct tm depStr = {0};
     //memset(&depStr, 0, sizeof(tm));
@@ -157,7 +166,6 @@ void process(vector<string> row){
     /*also add year-month-day-daylight saving information
      Time zone differnce may alter the day*/
     string date = row[0]; //FL_DATE
-    if(date.size() < 6) return; //invalid "date" string
     int year = stoi(date.substr(0, 4))-1900;
     int month = stoi(date.substr(5, 2))-1;
     int day = stoi(date.substr(8, 2));
@@ -192,10 +200,10 @@ void process(vector<string> row){
     time_t utc_time_t = mktime(depUtcTime);
     cout << "UTC time: " << ctime(&utc_time_t) << endl;*/
 
-    /*Add date to the departure time*/
+    /*part B - Add date to the departure time*/
     long timeStamp = depUtcTime->tm_min + 60*depUtcTime->tm_hour;
     int yDay = depUtcTime->tm_yday; //number of days since Jan 1st of the same year
-    timeStamp += yDay*20*60; // in minutes
+    timeStamp += yDay*20*60; // in minutes 
 
     /*Add the row info to the edge list*/
     //I take ORIGIN_AIRPORT_ID and DEST_AIRPORT_ID as u and v respectively
