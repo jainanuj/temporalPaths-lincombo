@@ -11,5 +11,11 @@ example.txt
 
 Example:
 ./tempath earliest example.txt
+
+Added by sanaz: 
+The third and forth arguments (the forth argument is optinal) are the number of source nodes and the path to the file containing the source nodes. Therefore, the example call will be: 
+./tempath earliest example.txt <number of source nodes> <path to the init file>[optinal] 
+
+Where init_file is the file containing the source nodes from which the single source shortest paths are computed. 
  
 

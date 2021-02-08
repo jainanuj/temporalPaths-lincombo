@@ -146,13 +146,16 @@ void Graph::print_adjList(){
 }
 //--------------
 
-void Graph::initial_query()
+void Graph::initial_query(int numS)
 {
-	t_start = 0;
-	t_end = infinity;
+    t_start = 0;
+    t_end = infinity;
+
+    /*added by sanaz*/
+    numSources = numS; 
 	
-	int s;
-	for(int i = 0 ;i < 100 ;i ++)
+    int s;
+    for(int i = 0 ; i < numSources; i++)
     {
     	s=rand()%V;
         sources.push_back(s);
@@ -160,23 +163,24 @@ void Graph::initial_query()
 
 }
 
-
-void Graph::initial_query(const char* filePath)
+void Graph::initial_query(const char* filePath, int numS)
 {
-	t_start = 0;
-	t_end = infinity;
+    t_start = 0;
+    t_end = infinity;
+
+    /*added by sanaz*/
+    numSources = numS; 
 	
-	FILE* file = fopen(filePath,"r");
-	int s, x;
-	for(int i = 0 ;i < 100 ;i ++)
+    FILE* file = fopen(filePath,"r");
+    int s, x;
+    for(int i = 0 ; i < numSources; i++)
     {
     	x=fscanf(file,"%d",&s);
-	//cout << "s: " << s << ", x: " << x << endl; 
     //	int y;
     //	x=fscanf(file,"%d%d",&s, &y);
         sources.push_back(s);
     }
-    
+
 }
 
 void Graph::run_earliest_arrival()
@@ -445,5 +449,5 @@ void Graph::shortest(int source)
 
 void Graph::print_avg_time()
 {
-	cout<<"Average time: " << time_sum/100 <<endl;
+	cout<<"Average time: " << time_sum/numSources <<endl;
 }

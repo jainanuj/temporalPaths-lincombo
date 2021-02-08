@@ -13,6 +13,8 @@
 using namespace std;
 
 const int infinity = 1e9;
+/*added by sanaz*/
+int numSources; 
 
 struct Edge
 {
@@ -35,8 +37,8 @@ class Graph
 public:
     Graph() {}
     Graph(const char* filePath); // input file
-    void initial_query(const char* filePath); // query file
-    void initial_query();
+    void initial_query(const char* filePath, int numS); // query file, numS argument added by sanaz
+    void initial_query(int numS); //numS argument added by sanaz
     void initial_ds_ea();
     void initial_ds_ld();
     void initial_ds_f();
@@ -97,13 +99,16 @@ Graph::Graph(const char* filePath)
     fclose(file);
 }
 
-void Graph::initial_query()
+void Graph::initial_query(int numS)
 {
-	t_start = 0;
-	t_end = infinity;
+    t_start = 0;
+    t_end = infinity;
+
+    /*added by sanaz*/
+    numSources = numS; 
 	
-	int s;
-	for(int i = 0 ;i < 100 ;i ++)
+    int s;
+    for(int i = 0 ; i < numSources; i++)
     {
     	s=rand()%V;
         sources.push_back(s);
@@ -112,14 +117,17 @@ void Graph::initial_query()
 }
 
 
-void Graph::initial_query(const char* filePath)
+void Graph::initial_query(const char* filePath, int numS)
 {
-	t_start = 0;
-	t_end = infinity;
+    t_start = 0;
+    t_end = infinity;
+
+    /*added by sanaz*/
+    numSources = numS; 
 	
-	FILE* file = fopen(filePath,"r");
-	int s, x;
-	for(int i = 0 ;i < 100 ;i ++)
+    FILE* file = fopen(filePath,"r");
+    int s, x;
+    for(int i = 0 ; i < numSources; i++)
     {
     	x=fscanf(file,"%d",&s);
     //	int y;
@@ -804,14 +812,14 @@ void Graph::shortest(int source)
 
 void Graph::print_avg_time()
 {
-	cout<<"Average time: " << time_sum/100 <<endl;
+	cout<<"Average time: " << time_sum/numSources <<endl;
 }
 
 void Graph::print_avg_time(const char* filePath1, const char* filePath2)
 {
 	FILE* file = fopen(filePath2,"a");
 	
-	fprintf(file, "%s\t%f\n", filePath1, time_sum/100);;
+	fprintf(file, "%s\t%f\n", filePath1, time_sum/numSources);;
 	fclose(file);
 }
 

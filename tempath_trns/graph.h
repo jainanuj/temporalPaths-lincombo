@@ -19,6 +19,8 @@
 using namespace std;
 
 const int infinity = 1e9;
+/*added by sanaz*/
+int numSources; 
 
 struct Edge
 {
@@ -59,8 +61,8 @@ public:
     void transform(); 
     void print_adjList(); //used for debugging
     //--------------
-    void initial_query(const char* filePath); // query file
-    void initial_query();
+    void initial_query(const char* filePath, int numS); // query file, numS argument added by sanaz
+    void initial_query(int numS); //numS argument added by sanaz
     /*void initial_ds_ea();
     void initial_ds_ld();
     void initial_ds_f();
