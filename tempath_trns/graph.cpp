@@ -233,16 +233,14 @@ void Graph::earliest_arrival(int source)
 	    }
 	}
     }
-
-    /*for debugging*/
-    /*cout << "distances:" << endl;
-    for(int i=0; i<V; i++)
-	cout << distances[i] << ", "; 
-    cout << endl; */
-    /***************/
 	
     t.stop();
     time_sum += t.GetRuntime();
+
+    /*for debugging only*/
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl; 
+
 }
 //-----------------
 
@@ -295,16 +293,14 @@ void Graph::latest_departure(int source)
 	    }
 	}
     }
-
-    /*for debugging*/
-    /*cout << "distances:" << endl;
-    for(int i=0; i<V; i++)
-	cout << distances[i] << ", "; 
-    cout << endl;*/
-    /***************/
 	
     t.stop();
     time_sum += t.GetRuntime();
+
+    /*for debugging only*/
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl; 
+
 }
 
 void Graph::run_fastest()
@@ -361,16 +357,14 @@ void Graph::fastest(int source)
 	    }
 	}
      }
-
-    /*for debugging*/
-    /*cout << "distances:" << endl;
-    for(int i=0; i<V; i++)
-	cout << distances[i] << ", "; 
-    cout << endl;*/
-    /***************/	
 	
     t.stop();
     time_sum += t.GetRuntime();
+
+    /*for debugging only*/
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl; 
+
 }
 //-----------------
 
@@ -406,9 +400,7 @@ void Graph::shortest(int source)
 	if(node_list[*it].t >= t_start && node_list[*it].t <= t_end){
 	   pq.push(make_pair(0, *it));
 	   local_dist[*it] = 0; 
-	}
-
-    cout << "here" << endl; 
+	} 
 
     while(!pq.empty()){
 	int node = pq.top().second; 
@@ -428,23 +420,19 @@ void Graph::shortest(int source)
   	}
     }
 
-    cout << "here2" << endl;
-
     for(int i=0; i<adj_list.size(); i++)
 	if(node_list[i].isVin && node_list[i].t >= t_start && node_list[i].t <= t_end){
 	   int u = node_list[i].u; 
 	   distances[u] = min(distances[u], local_dist[i]);
 	}
-
-    /*for debugging*/
-    cout << "distances:" << endl;
-    for(int i=0; i<V; i++)
-	cout << distances[i] << ", "; 
-    cout << endl;
-    /***************/
 	
     t.stop();
     time_sum += t.GetRuntime();
+
+    /*for debugging only*/
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl; 
+
 }
 
 void Graph::print_avg_time()

@@ -207,6 +207,10 @@ void Graph::earliest_arrival(int source)
 	
 	t.stop();
 	time_sum += t.GetRuntime();
+
+	/*added by sanaz: for debugging only*/
+	for(int i=0; i<arr_time.size(); i++)
+	    cout << arr_time[i] << endl; 
 }
 
 void Graph::run_earliest_arrival(const char* filePath)
@@ -286,17 +290,21 @@ void Graph::latest_departure(int source)
 	
 	for(int i=dynamic_E-1; i>=0; i --) {
 		if(edge_list[i].t>=t_start){
-			if (edge_list[i].t+edge_list[i].w <= arr_time[edge_list[i].u] && edge_list[i].t > arr_time[edge_list[i].v]){
-				arr_time[edge_list[i].v] = edge_list[i].t;
+			if (edge_list[i].t+edge_list[i].w <= arr_time[edge_list[i].v] && edge_list[i].t > arr_time[edge_list[i].u]){
+				arr_time[edge_list[i].u] = edge_list[i].t;
 			}	
 		}
 		else {
 			break;
 		}
 	}
-	
+
 	t.stop();
 	time_sum += t.GetRuntime();
+
+	/*added by sanaz: for debugging only*/
+	for(int i=0; i<arr_time.size(); i++)
+	    cout << arr_time[i] << endl; 
 }
 
 
@@ -327,8 +335,8 @@ void Graph::latest_departure(int source, FILE * file)
 	
 	for(int i=dynamic_E-1; i>=0; i --) {
 		if(edge_list[i].t>=t_start){
-			if (edge_list[i].t+edge_list[i].w <= arr_time[edge_list[i].u] && edge_list[i].t > arr_time[edge_list[i].v]){
-				arr_time[edge_list[i].v] = edge_list[i].t;
+			if (edge_list[i].t+edge_list[i].w <= arr_time[edge_list[i].v] && edge_list[i].t > arr_time[edge_list[i].u]){
+				arr_time[edge_list[i].u] = edge_list[i].t;
 			}	
 		}
 		else {
@@ -594,9 +602,15 @@ void Graph::fastest(int source)
 			break;
 		}
 	}
-	
+
+
 	t.stop();
 	time_sum += t.GetRuntime();
+
+	/*added by sanaz: for debugging only*/
+	for(int i=0; i<f_time.size(); i++)
+	    cout << f_time[i] << endl; 
+
 }
 
 
@@ -808,6 +822,11 @@ void Graph::shortest(int source)
 	
 	t.stop();
 	time_sum += t.GetRuntime();
+
+	/*added by sanaz: for debugging only*/
+	for(int i=0; i<f_time.size(); i++)
+	    cout << f_time[i] << endl; 
+
 }
 
 void Graph::print_avg_time()
