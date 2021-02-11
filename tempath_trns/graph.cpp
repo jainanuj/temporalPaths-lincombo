@@ -191,7 +191,7 @@ void Graph::run_earliest_arrival()
     { 
     	//modified by sanaz:
 	for(int j=0; j<V; j++)
-	  distances[j] = t_end+1; 
+	  distances[j] = infinity; 
 	distances[sources[i]] = t_start; 
 	//------------------
     	earliest_arrival(sources[i]);
@@ -311,7 +311,7 @@ void Graph::run_fastest()
     { 
     	//modified by sanaz:
 	for(int j=0; j<V; j++)
-	  distances[j] = t_end+1; 
+	  distances[j] = infinity; 
 	distances[sources[i]] = 0; 
 	//------------------
     	fastest(sources[i]);
@@ -376,7 +376,7 @@ void Graph::run_shortest()
     { 
     	//modified by sanaz:
 	for(int j=0; j<V; j++)
-	  distances[j] = t_end+1; 
+	  distances[j] = infinity; 
 	distances[sources[i]] = 0; 
     	shortest(sources[i]);
     }
@@ -393,7 +393,7 @@ void Graph::shortest(int source)
     /*defining and initializing data structures*/
     typedef pair<int, int> iPair; 	
     priority_queue< iPair, vector <iPair> , greater<iPair> > pq; //pairs of <distance, id> sorted in increasing order of distance
-    vector<int> local_dist(adj_list.size(), t_end+1); //distance vector for the nodes in the transformed graph
+    vector<int> local_dist(adj_list.size(), infinity); //distance vector for the nodes in the transformed graph
     vector<bool> done(adj_list.size(), false); //keeping track of the nodes whose distance is established
     
     for(auto it=Vout[source].begin(); it!=Vout[source].end(); it++)
