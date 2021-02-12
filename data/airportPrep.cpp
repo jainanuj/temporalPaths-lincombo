@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     // as String Vector 
     vector<string> row;
  
-    int rowIndex = 0;  
+    //int rowIndex = 0;  
     while (getline(fin, line)) { 
   
         row.clear(); 
@@ -90,12 +90,13 @@ int main(int argc, char *argv[])
             // of a row to a vector 
             row.push_back(word); 
         } 
-         
-        if(rowIndex > 0){
-	  /*bypassing the titles*/
+
+	/*bypassing the titles: the titles include "" in their names*/
+	//if(rowIndex > 0)
+        if(!row[0].substr(1,7).equals("FL_DATE")){
 	  process(row);
   	}
-        rowIndex++;
+        //rowIndex++;
     } 
 
     /*sort the edgeList in increasing order of t
@@ -201,7 +202,7 @@ void process(vector<string> row){
     cout << "UTC time: " << ctime(&utc_time_t) << endl;*/
 
     /*part B - Add date to the departure time*/
-    long timeStamp = depUtcTime->tm_min + 60*depUtcTime->tm_hour;
+    int timeStamp = depUtcTime->tm_min + 60*depUtcTime->tm_hour;
     int yDay = depUtcTime->tm_yday; //number of days since Jan 1st of the same year
     timeStamp += yDay*20*60; // in minutes 
 
