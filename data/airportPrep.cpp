@@ -34,8 +34,8 @@ void printRow(vector<string> row);
 
 int main(int argc, char *argv[]) 
 {  
-    if(argc < 2){
-	cout << "Please enter the path to the output file" << endl; 
+    if(argc < 3){
+	cout << "useage: ./airportPrep <path to the input file> <path to the output file>" << endl; 
 	return 0; 
     }    
 
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
    
     /*now deal with the airport data*/
     // Open an existing file 
-    fin.open("./AirportRawData/jan2020.csv", ios::in); 
+    fin.open(argv[1], ios::in); 
     if(!fin.is_open()){
 	cout << "Error opening the file";
 	return 0; 
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 
 	/*bypassing the titles: the titles include "" in their names*/
 	//if(rowIndex > 0)
-        if(!row[0].substr(1,7).equals("FL_DATE")){
+        if(row[0].substr(1,7).compare("FL_DATE") != 0){
 	  process(row);
   	}
         //rowIndex++;
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
 
     /*now write the edgelist to an output file*/
     ofstream outfile;
-    outfile.open(argv[1]);
+    outfile.open(argv[2]);
     if(!outfile.is_open())
 	cout << "error in opening the outfile" << endl;
 
