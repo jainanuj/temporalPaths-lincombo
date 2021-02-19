@@ -7,6 +7,11 @@ g++ airportPrep.cpp -o airportPrep
 and ran using 
 ./airportPrep <path to the input file> <path to the output file>
 
+- konectPrep.cpp performs the required preprocessing on the datasets taken from the konect website () to make them compatible with the temPath input specifications. 
+g++ konectPrep.cpp -o konectPrep
+/airportPrep <path to the input file> <path to the output file>, -u [optinal - if undirected] 
+** Actually in case the input graph is undirected, only having 4 input arguments suffices and there is no need to explicitly input -u. 
+
 - stateTimeZones.csv is used to build the time zone hash table in airportPrep.cpp
 - timeZone.ods is the initial file used to build stateTimeZones.csv
 
