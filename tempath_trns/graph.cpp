@@ -338,6 +338,10 @@ void Graph::fastest(int source)
     vector<bool> visited(node_list.size(), false);
     queue<int> Q; 
 
+    //newly added: what if we get to Vin[source] at some point?
+    for(auto s_it = Vin[source].begin(); s_it != Vin[source].end(); s_it++)
+	visited[*s_it] = true;
+
     for(auto it = startPoints.begin(); it != startPoints.end(); it++){
 	int ts = node_list[it->first].t;
         visited[it->first] = true; 
