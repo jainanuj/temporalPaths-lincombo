@@ -48,6 +48,14 @@ void Graph::transform(){
    //Node tmpNode; 
    int t; 
    for(int i=0; i<V; i++){
+	if(Tin[i].size() == 0){
+          Node tmpNode(i, 0); 
+	  node_list.push_back(tmpNode);
+	  Vin[i].insert(index);
+	  inMap[make_pair(i, t)] = index++;
+	  Tin[i].insert(0);
+	  continue;
+	}
 	for(it=Tin[i].begin(); it!=Tin[i].end(); it++){
 	  t = *it;
 	  //tmpNode = new Node(i, t, true);
@@ -65,6 +73,10 @@ void Graph::transform(){
 	  //outMap[make_pair(i, t)] = index++;
 	//}
    }
+
+   cout << "node_list:" << endl;
+   for(int i=0; i<node_list.size(); i++)
+	cout << "u: " << node_list[i].u << ", t: " << node_list[i].t << endl;
 
    //filling in the outVec vector:
    for(Edge e : edge_list){
@@ -94,6 +106,9 @@ void Graph::transform(){
 	    rev_adjList[neigh->first].push_back(make_pair(i, neigh->second)); 
         }
    }
+
+   //for debugging:
+   print_adjList();
 }
 
 void Graph::print_adjList(){  
@@ -104,12 +119,12 @@ void Graph::print_adjList(){
      for(int j=0; j<adj_list[i].size(); j++){	
 
         //print out the source node 
-	cout << "(" << node_list[i].u << ", " << node_list[i].t << ", "; 
+	cout << "(" << node_list[i].u << ", " << node_list[i].t << ") "; 
 
 	//print out the destination node
 	int id = adj_list[i][j].first;
 	int w = adj_list[i][j].second; 
-        cout << "(" << node_list[id].u << ", " << node_list[id].t << ", ";
+        cout << "(" << node_list[id].u << ", " << node_list[id].t << ") ";
 	cout << w << endl; 
      }
    }
@@ -339,24 +354,48 @@ void Graph::fastest(int source)
 	//int ts = node_list[it->first].t;
 	int ts = it->second;
 
+        cout << "startPoint:" << endl;	
+	cout << "node: " << it->first << ", t: " << it->second << endl;
+	cout << "ts: " << ts << endl;
+
 	//here it->first is a neighbor of the source
         visited[it->first] = true; 
         Q.push(it->first);
 	int tmp_time =  node_list[it->first].t-ts;
-	if(tmp_time < distances[it->first])
-	   distances[it->first] = tmp_time;
+	int tmp_u = node_list[it->first].u;
+	if(tmp_time < distances[tmp_u]){
+	   distances[tmp_u] = tmp_time;
+	   cout << "distance updated to " << tmp_time << endl;
+	}
 
 	while(!Q.empty()){
+	    cout << "at the beginning of the while loop" << endl;
+	    cout << "visited: " << endl;
+	    for(int ii=0; ii<visited.size(); ii++)	
+		if(visited[ii])
+			cout << "true, ";
+		else
+			cout << "false, ";
+	    cout << endl;
+	    cout << "distances:" << endl;
+	    for(int ii=0; ii<distances.size(); ii++)
+		cout << distances[ii] << ", ";
+	    cout << endl;
 	    int node = Q.front(); 
 	    Q.pop();
+	    cout << "node " << node_list[node].u << "popped" << endl;
 	    for(auto neighbor=adj_list[node].begin(); neighbor!=adj_list[node].end(); neighbor++){
 		int nID = neighbor->first; 
 		Node neiNode = node_list[nID];
+	        cout << "neighbor: " << endl;
+		cout << "u: " << neiNode.u << ", t: " << neiNode.t << endl;
 		if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
 		   visited[nID] = true; 
 		   Q.push(nID);
-		   if((neiNode.t-ts) < distances[neiNode.u])
+		   if((neiNode.t-ts) < distances[neiNode.u]){
 		      distances[neiNode.u] = (neiNode.t-ts); 
+		      cout << "neighbor distance updated to " << neiNode.t-ts << endl;
+		   }
 		}
 	    }
 	}

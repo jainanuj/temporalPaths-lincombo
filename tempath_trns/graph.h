@@ -19,8 +19,6 @@
 using namespace std;
 
 const int infinity = 1e9;
-/*added by sanaz*/
-int numSources; 
 
 struct Edge
 {
@@ -99,6 +97,10 @@ public:
 	//vector <int> arr_time, f_time;
 	//vector < set < pair< int, int > > > ft_timepair; // arrival time, starting time
 	//vector < set < pair< int, int > > > st_timepair; // arrival time, shortest distance 
+
+
+    /*added by sanaz*/
+    int numSources; 
 
     //added by sanaz
     vector<set<int>> Vin; //for each node u contains Vin(u) as a set of newIDs
