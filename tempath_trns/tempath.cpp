@@ -1,8 +1,8 @@
-/*#include <iostream>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <fstream>
-#include <algorithm>*/
+#include <algorithm>
 #include "graph.h"
 using namespace std;
 
@@ -18,6 +18,7 @@ int main(int argc, char* argv[]){
     Graph g(argv[2]);
     
     //added by sanaz:
+    g.dominatedRemoval();
     g.transform();
     //g.print_adjList(); //for debugging
 

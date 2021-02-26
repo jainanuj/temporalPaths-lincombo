@@ -28,6 +28,40 @@ Graph::Graph(const char* filePath)
     fclose(file);
 }
 
+//added by sanaz: to remove the dominant edges from the edge list
+void Graph::dominatedRemoval(){
+    //cout << "loc1" << endl;
+    sort(edge_list.begin( ), edge_list.end( ), [ ](const Edge& e1, const Edge& e2){
+	if(e1.u != e2.u) return e1.u < e2.u;
+ 	if(e1.v != e2.v) return e1.v < e2.v;
+	if(e1.t != e2.t) return e1.t < e2.t;
+	return e1.w > e2.w;
+    }); 
+    //cout << "loc2" << endl;
+    int listSize = edge_list.size();
+    for(int i=0; i<listSize; i++){
+	int j = i+1;
+	while(j < listSize && edge_list[i].u == edge_list[j].u && edge_list[i].v == edge_list[j].v){
+	     Edge e1 = edge_list[i];
+	     Edge e2 = edge_list[j];
+	     if((e1.t < e2.t && e1.t+e1.w >= e2.t+e2.w) || (e1.t == e2.t && e1.w >= e2.w)){
+		 edge_list.erase(edge_list.begin()+i);
+		 listSize--;
+		 i--;
+		 break;
+	      }
+	     j++;
+	}
+    }
+
+    /*for debugging*/
+    /*cout << "the edge_list after removing the dominant edges:" << endl;
+    for(int i=0; i<edge_list.size(); i++)
+	cout << "u: " << edge_list[i].u << ", v: " << edge_list[i].v << ", t: " << edge_list[i].t << ", w: " << edge_list[i].w << endl;*/
+
+    return;
+}
+
 //added by sanaz
 void Graph::transform(){
    vector<set<int>> Tin; //the set of distinct in times for each node
@@ -74,9 +108,9 @@ void Graph::transform(){
 	//}
    }
 
-   cout << "node_list:" << endl;
+   /*cout << "node_list:" << endl;
    for(int i=0; i<node_list.size(); i++)
-	cout << "u: " << node_list[i].u << ", t: " << node_list[i].t << endl;
+	cout << "u: " << node_list[i].u << ", t: " << node_list[i].t << endl;*/
 
    //filling in the outVec vector:
    for(Edge e : edge_list){
@@ -108,7 +142,7 @@ void Graph::transform(){
    }
 
    //for debugging:
-   print_adjList();
+   //print_adjList();
 }
 
 void Graph::print_adjList(){  
@@ -354,9 +388,9 @@ void Graph::fastest(int source)
 	//int ts = node_list[it->first].t;
 	int ts = it->second;
 
-        cout << "startPoint:" << endl;	
+        /*cout << "startPoint:" << endl;	
 	cout << "node: " << it->first << ", t: " << it->second << endl;
-	cout << "ts: " << ts << endl;
+	cout << "ts: " << ts << endl;*/
 
 	//here it->first is a neighbor of the source
         visited[it->first] = true; 
@@ -365,11 +399,11 @@ void Graph::fastest(int source)
 	int tmp_u = node_list[it->first].u;
 	if(tmp_time < distances[tmp_u]){
 	   distances[tmp_u] = tmp_time;
-	   cout << "distance updated to " << tmp_time << endl;
+	   //cout << "distance updated to " << tmp_time << endl;
 	}
 
 	while(!Q.empty()){
-	    cout << "at the beginning of the while loop" << endl;
+	    /*cout << "at the beginning of the while loop" << endl;
 	    cout << "visited: " << endl;
 	    for(int ii=0; ii<visited.size(); ii++)	
 		if(visited[ii])
@@ -380,21 +414,21 @@ void Graph::fastest(int source)
 	    cout << "distances:" << endl;
 	    for(int ii=0; ii<distances.size(); ii++)
 		cout << distances[ii] << ", ";
-	    cout << endl;
+	    cout << endl;*/
 	    int node = Q.front(); 
 	    Q.pop();
-	    cout << "node " << node_list[node].u << "popped" << endl;
+	    //cout << "node " << node_list[node].u << "popped" << endl;
 	    for(auto neighbor=adj_list[node].begin(); neighbor!=adj_list[node].end(); neighbor++){
 		int nID = neighbor->first; 
 		Node neiNode = node_list[nID];
-	        cout << "neighbor: " << endl;
-		cout << "u: " << neiNode.u << ", t: " << neiNode.t << endl;
+	        /*cout << "neighbor: " << endl;
+		cout << "u: " << neiNode.u << ", t: " << neiNode.t << endl;*/
 		if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
 		   visited[nID] = true; 
 		   Q.push(nID);
 		   if((neiNode.t-ts) < distances[neiNode.u]){
 		      distances[neiNode.u] = (neiNode.t-ts); 
-		      cout << "neighbor distance updated to " << neiNode.t-ts << endl;
+		      //cout << "neighbor distance updated to " << neiNode.t-ts << endl;
 		   }
 		}
 	    }

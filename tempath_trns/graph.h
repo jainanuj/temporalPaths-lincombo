@@ -58,6 +58,7 @@ public:
     //added by sanaz
     void transform(); 
     void print_adjList(); //used for debugging
+    void dominatedRemoval(); //to remove the dominant edges from the edge list
     //--------------
     void initial_query(const char* filePath, int numS); // query file, numS argument added by sanaz
     void initial_query(int numS); //numS argument added by sanaz

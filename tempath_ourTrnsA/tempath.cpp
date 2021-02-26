@@ -18,6 +18,7 @@ int main(int argc, char* argv[]){
     Graph g(argv[2]);
     
     //added by sanaz:
+    g.dominatedRemoval();
     g.transform();
     //g.print_adjList(); //for debugging
 
