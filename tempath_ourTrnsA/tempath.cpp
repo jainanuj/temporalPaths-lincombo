@@ -19,7 +19,9 @@ int main(int argc, char* argv[]){
     
     //added by sanaz:
     g.dominatedRemoval();
+    cout << "after dominated removal" << endl;
     g.transform();
+    cout << "after transform" << endl;
     //g.print_adjList(); //for debugging
 
     /*modified by sanaz*/

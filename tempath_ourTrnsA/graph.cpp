@@ -74,6 +74,8 @@ void Graph::transform(){
 	//Tout[e.u].insert(e.t);
    }
 
+   cout << "loc1" << endl;
+
    set <int>::iterator it; 
    //to map (u, t) to their corresponding IDs in the transformed graph
    map<pair<int, int>, int> inMap;
@@ -108,6 +110,8 @@ void Graph::transform(){
 	//}
    }
 
+   cout << "loc2" << endl;
+
    /*cout << "node_list:" << endl;
    for(int i=0; i<node_list.size(); i++)
 	cout << "u: " << node_list[i].u << ", t: " << node_list[i].t << endl;*/
@@ -117,6 +121,8 @@ void Graph::transform(){
 	int neighID = inMap[make_pair(e.v, e.t+e.w)];
 	outVec[e.u].push_back(make_pair(neighID, e.t));
    }
+
+   cout <<"loc3" << endl;
 
    adj_list.resize(index); 
 
@@ -132,6 +138,8 @@ void Graph::transform(){
 	   }
 	}
    }
+
+   cout << "loc4" << endl;
 
    //filling up the reverse adjacency list:
    rev_adjList.resize(index);
