@@ -1,5 +1,5 @@
 CC	= g++
-CPPFLAGS= -Wno-deprecated -O3 -c 
+CPPFLAGS= -std=c++11 -Wno-deprecated -O3 -c 
 LDFLAGS	= -O3 
 SOURCES	= tempath.cpp
 OBJECTS	= $(SOURCES:.cpp=.o)

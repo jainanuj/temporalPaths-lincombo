@@ -4,12 +4,13 @@ The "inputGraphs" folder contains the data ready to be input to the shortest pat
 
 
 initProd.cpp is used to produce the initial source node IDs from which the single source shortest paths are computed. To compile, use:
-g++ initProd.cpp -o initProd
+g++ -std=c++11 initProd.cpp -o initProd
 
 Useage is as follows:
 ./initProd <init_points> <|V|> <init_file>
 
 I have decided to name the init files in the following manner: 
 init_<num sources>_<|V|>_ID 
-
+OR
+init_<num sources>_<name of graph file>_ID
 Where ID is a number starting from 1 defining how many of those files we have. 

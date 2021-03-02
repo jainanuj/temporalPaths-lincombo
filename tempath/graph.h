@@ -304,7 +304,7 @@ void Graph::latest_departure(int source)
 
 	/*added by sanaz: for debugging only*/
 	for(int i=0; i<arr_time.size(); i++)
-	    cout << arr_time[i] << endl; 
+	    cout << arr_time[i] << endl;
 }
 
 
@@ -609,8 +609,7 @@ void Graph::fastest(int source)
 
 	/*added by sanaz: for debugging only*/
 	for(int i=0; i<f_time.size(); i++)
-	    cout << f_time[i] << endl; 
-
+ 	   cout << f_time[i] << endl;
 }
 
 

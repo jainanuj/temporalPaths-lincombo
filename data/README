@@ -3,13 +3,13 @@ The cpp files in this folder are used to preprocess the raw datasets and turn th
 -edgeCnt.sh is used with the webScope flow networks to unzip all the folders and count the number of edges in them.  
 
 - airportPrep.cpp is used to preprocess the airline .csv files corresponding to 1 month of data from https://www.transtats.bts.gov/OT_Delay/OT_DelayCause1.asp. It is compiled using 
-g++ airportPrep.cpp -o airportPrep
+g++ -std=c++11 airportPrep.cpp -o airportPrep
 and ran using 
 ./airportPrep <path to the input file> <path to the output file>
 
 - konectPrep.cpp performs the required preprocessing on the datasets taken from the konect website () to make them compatible with the temPath input specifications. 
-g++ konectPrep.cpp -o konectPrep
-/airportPrep <path to the input file> <path to the output file>, -u [optinal - if undirected] 
+g++ -std=c++11 konectPrep.cpp -o konectPrep
+/konectPrep [-t if tab-delimited OR -s if space-delimited] <path to the input file> <path to the output file>, -u [optinal - if undirected] 
 ** Actually in case the input graph is undirected, only having 4 input arguments suffices and there is no need to explicitly input -u. 
 
 - stateTimeZones.csv is used to build the time zone hash table in airportPrep.cpp

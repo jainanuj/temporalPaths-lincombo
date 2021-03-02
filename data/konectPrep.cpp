@@ -31,19 +31,20 @@ vector<Edge> edgeList;
 int main(int argc, char *argv[]) 
 {  
     bool undirected = false;
-    if(argc < 3){
-	cout << "useage: ./airportPrep <path to the input file> <path to the output file>, -u [optinal - if undirected]" << endl; 
+    if(argc < 4){
+	cout << "useage: ./konectPrep [-t for tab-delimited OR -s for space-delimited] <path to the input file> <path to the output file>, -u [optinal, if undirected]" << endl; 
 	return 0; 
     }   
 
-    if(argc == 4)
+    if(argc == 5)
 	undirected = true;
 
+    char delim = (argv[1][1] == 's')? ' ' : '\t';
     string line, word; 
 
     // Open the input file 
     fstream fin;
-    fin.open(argv[1], ios::in); 
+    fin.open(argv[2], ios::in); 
     if(!fin.is_open()){
 	cout << "Error opening the file";
 	return 0; 
@@ -61,12 +62,12 @@ int main(int argc, char *argv[])
         // used for breaking words 
         stringstream ss(line); 
   
-        while (getline(ss, word, ' ')) { 
+        while (getline(ss, word, delim)) { 
             row.push_back(word); 
         } 
 
 	/*bypassing the titles: lines that start with %*/
-        if(row[0].compare("%") != 0){
+        if(row[0][0] != '%'){
 	   Edge e(stoi(row[0]), stoi(row[1]), stol(row[3]), 1);
 
 	   //bypassing the self-cycles:
@@ -82,10 +83,7 @@ int main(int argc, char *argv[])
 	line = "";
     } 
 
-    cout << "here" << endl; 
-
     fin.close();
-    cout << "loc-1" << endl;
     /*sort the edgeList in increasing order of t*/
     sort(edgeList.begin(), edgeList.end(), eSort);
 
@@ -99,13 +97,11 @@ int main(int argc, char *argv[])
     long index = 0; 
     while(edgeList[index].t == 0) //Assuem there is at least 1 non-zero timestamp
 	index++;
-    cout << "loc0" << endl;
     if(index > 0){
 	for(long i=index-1; i>=0; i--)
 	    edgeList[i].t = edgeList[index].t-10;
     }
 
-    cout << "loc1" << endl;
     
     /*Here, min time is subtracted from all the times
      Also, the nodes are both counted and re-numbered*/
@@ -141,7 +137,7 @@ int main(int argc, char *argv[])
 
     /*now write the edgelist to an output file*/
     ofstream outfile;
-    outfile.open(argv[2]);
+    outfile.open(argv[3]);
     if(!outfile.is_open())
 	cout << "error in opening the outfile" << endl;
 

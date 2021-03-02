@@ -30,14 +30,12 @@ Graph::Graph(const char* filePath)
 
 //added by sanaz: to remove the dominant edges from the edge list
 void Graph::dominatedRemoval(){
-    //cout << "loc1" << endl;
     sort(edge_list.begin( ), edge_list.end( ), [ ](const Edge& e1, const Edge& e2){
 	if(e1.u != e2.u) return e1.u < e2.u;
  	if(e1.v != e2.v) return e1.v < e2.v;
 	if(e1.t != e2.t) return e1.t < e2.t;
 	return e1.w > e2.w;
     }); 
-    //cout << "loc2" << endl;
     int listSize = edge_list.size();
     for(int i=0; i<listSize; i++){
 	int j = i+1;
@@ -65,52 +63,33 @@ void Graph::dominatedRemoval(){
 //added by sanaz
 void Graph::transform(){
    vector<set<int>> Tin; //the set of distinct in times for each node
-   //vector<set<int>> Tout; //the set of distinct out times for each node
    Tin.resize(V);
-   //Tout.resize(V); 
    for(Edge e : edge_list){
-	//initially set all the newIDs (indices in the transformed graph) to -1
 	Tin[e.v].insert(e.t+e.w);
-	//Tout[e.u].insert(e.t);
    }
-
-   cout << "loc1" << endl;
 
    set <int>::iterator it; 
    //to map (u, t) to their corresponding IDs in the transformed graph
    map<pair<int, int>, int> inMap;
-   //map<pair<int, int>, int> outMap;
    int index = 0; 
-   //Node tmpNode; 
    int t; 
    for(int i=0; i<V; i++){
 	if(Tin[i].size() == 0){
           Node tmpNode(i, 0); 
 	  node_list.push_back(tmpNode);
 	  Vin[i].insert(index);
-	  inMap[make_pair(i, t)] = index++;
+	  inMap[make_pair(i, 0)] = index++;
 	  Tin[i].insert(0);
 	  continue;
 	}
 	for(it=Tin[i].begin(); it!=Tin[i].end(); it++){
 	  t = *it;
-	  //tmpNode = new Node(i, t, true);
           Node tmpNode(i, t); 
 	  node_list.push_back(tmpNode);
 	  Vin[i].insert(index);
 	  inMap[make_pair(i, t)] = index++;
 	}
-	//for(it=Tout[i].begin(); it!=Tout[i].end(); it++){
-	  //t = *it;
-	  //tmpNode = new Node(i, t, false);
-	  //Node tmpNode(i, t, false); 
-	  //node_list.push_back(tmpNode);
-	  //Vout[i].insert(index);
-	  //outMap[make_pair(i, t)] = index++;
-	//}
    }
-
-   cout << "loc2" << endl;
 
    /*cout << "node_list:" << endl;
    for(int i=0; i<node_list.size(); i++)
@@ -122,24 +101,24 @@ void Graph::transform(){
 	outVec[e.u].push_back(make_pair(neighID, e.t));
    }
 
-   cout <<"loc3" << endl;
-
    adj_list.resize(index); 
 
    //edge creation step:
+   int edge_cnt = 0; //just for debugging
    for(Edge e : edge_list){
 	int v_index = inMap[make_pair(e.v, e.t+e.w)];
-	//for(t : Tin[e.u])
 	for(auto set_it = Tin[e.u].begin(); set_it != Tin[e.u].end(); set_it++){
 	   t = *set_it;
 	   if(t <= e.t){
 	      int u_index = inMap[make_pair(e.u, t)];
 	      adj_list[u_index].push_back(make_pair(v_index, e.w));
+	      edge_cnt++; // just for debugging
 	   }
 	}
    }
 
-   cout << "loc4" << endl;
+   cout << "number of edges after transform: " << edge_cnt << endl;
+   cout << "number of nodes after transform: " << index << endl;
 
    //filling up the reverse adjacency list:
    rev_adjList.resize(index);
@@ -151,6 +130,20 @@ void Graph::transform(){
 
    //for debugging:
    //print_adjList();
+
+
+   //for debugging
+   /*cout << "source: 14865" << endl;
+   int from_id = inMap[make_pair(14865, 0)];
+   int to_id = inMap[make_pair(14517, 549505)];
+   cout << "from_id: " << from_id << endl;
+   cout << "adj_list[from_id].size(): " << adj_list[from_id].size() << endl;
+   for(auto it2 = adj_list[from_id].begin(); it2 != adj_list[from_id].end(); it2++)
+	if(it2->first == to_id){
+	    cout << "the link is found" << endl;
+	    return;
+        }
+   cout << "the link is not found!!!!!" << endl;*/
 }
 
 void Graph::print_adjList(){  
@@ -240,27 +233,35 @@ void Graph::earliest_arrival(int source)
     /*initializing Q*/
     set<int>::iterator it; 
     for(it = Vin[source].begin(); it != Vin[source].end(); it++){
-	visited[*it] = true; 
+	visited[*it] = true;
+        //cout << "node " << node_list[*it].u << " pushed into the queu. Node id: " << *it << "node time: " << node_list[*it].t << endl; 
         Q.push(*it);
     }
 
     while(!Q.empty()){
 	int node = Q.front(); 
+        //cout << "node " << node_list[node].u << " extracted from Q, node_id(node): " << node << endl;
 	Q.pop();
+	//cout << "adj_list[node].size(): " << adj_list[node].size() << endl;
 	for(auto neighbor=adj_list[node].begin(); neighbor!=adj_list[node].end(); neighbor++){
 	    /*TO BE OPTIMIZED*/
 	    /*the time we enter the "source node" doesn't matter, but the time we exit it does*/
 	    int exitTime = node_list[neighbor->first].t - neighbor->second;
+	    //cout << "exit time: " << exitTime << endl;
 	    if(exitTime < t_start || exitTime > t_end)
 		continue;
 	    /*UP TO HERE*/
 	    int nID = neighbor->first; 
 	    Node neiNode = node_list[nID];
+	    //cout << "neighbor: " << neiNode.u << endl;
 	    if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
 		visited[nID] = true; 
+		//cout << "neighbor pushed into Q" << endl;
 		Q.push(nID);
-		if(neiNode.t < distances[neiNode.u])
-		   distances[neiNode.u] = neiNode.t; 
+		if(neiNode.t < distances[neiNode.u]){
+		   distances[neiNode.u] = neiNode.t;
+		  // cout << "neighbor distance updated" << endl; 
+		}
 	    }
 	}
     }
@@ -270,8 +271,7 @@ void Graph::earliest_arrival(int source)
 
     /*for debugging only*/
     for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl; 
-
+        cout << distances[i] << endl;
 }
 //-----------------
 
@@ -345,8 +345,7 @@ void Graph::latest_departure(int source)
 
     /*for debugging only*/
     for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl; 
-
+        cout << distances[i] << endl;
 }
 
 void Graph::run_fastest()
@@ -448,8 +447,7 @@ void Graph::fastest(int source)
 
     /*for debugging only*/
     for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl; 
-
+	cout << distances[i] << endl;
 }
 //-----------------
 

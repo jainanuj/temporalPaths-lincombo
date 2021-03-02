@@ -99,6 +99,8 @@ void Graph::transform(){
 	}
    }
    adj_list.resize(index); 
+   
+   int edgeCnt = 0; 
 
    //edge creation step a:
    set <int>::reverse_iterator rit;
@@ -116,6 +118,7 @@ void Graph::transform(){
 	   if(matched.find(tOut) == matched.end()){ 
 		matched.insert(tOut);
 	   	adj_list[inMap[make_pair(i, tIn)]].push_back(make_pair(outMap[make_pair(i, tOut)], 0));
+		edgeCnt++;
 	   }
 	}
    }
@@ -129,6 +132,7 @@ void Graph::transform(){
 	   adj_list[inMap[make_pair(i, *it)]].push_back(make_pair(inMap[make_pair(i, *it2)], 0));
 	   it++;
 	   it2++;
+	   edgeCnt++;
       }
       it = it2 = Tout[i].begin();
       if(it2!=Tout[i].end()) it2++;
@@ -136,12 +140,14 @@ void Graph::transform(){
 	   adj_list[outMap[make_pair(i, *it)]].push_back(make_pair(outMap[make_pair(i, *it2)], 0));
 	   it++;
 	   it2++;
+	   edgeCnt++;
       }
    }
 
    //edge creation step c: 
    for(Edge e : edge_list){
 	adj_list[outMap[make_pair(e.u, e.t)]].push_back(make_pair(inMap[make_pair(e.v, e.t+e.w)], e.w));
+	edgeCnt++;
    }
 
    //filling up the reverse adjacency list:
@@ -151,6 +157,9 @@ void Graph::transform(){
 	    rev_adjList[neigh->first].push_back(i); 
         }
    }
+	
+   cout << "number of nodes after transformation: " << node_list.size() << endl;
+   cout << "number of edges after transformation: " << edgeCnt << endl;
 }
 void Graph::print_adjList(){  
    cout << "(u1, t1, Vin1/Vout1) (u2, t2, Vin2/Vout2) W" << endl; 
