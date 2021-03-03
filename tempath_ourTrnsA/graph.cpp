@@ -74,14 +74,16 @@ void Graph::transform(){
    int index = 0; 
    int t; 
    for(int i=0; i<V; i++){
-	if(Tin[i].size() == 0){
+	/*if(Tin[i].size() == 0){
           Node tmpNode(i, 0); 
 	  node_list.push_back(tmpNode);
 	  Vin[i].insert(index);
 	  inMap[make_pair(i, 0)] = index++;
 	  Tin[i].insert(0);
 	  continue;
-	}
+	}*/
+	//newly added to fix a bug:
+	Tin[i].insert(0);
 	for(it=Tin[i].begin(); it!=Tin[i].end(); it++){
 	  t = *it;
           Node tmpNode(i, t); 
@@ -134,8 +136,8 @@ void Graph::transform(){
 
    //for debugging
    /*cout << "source: 14865" << endl;
-   int from_id = inMap[make_pair(14865, 0)];
-   int to_id = inMap[make_pair(14517, 549505)];
+   int from_id = inMap[make_pair(24979, 0)];
+   int to_id = inMap[make_pair(1162, 1019196)];
    cout << "from_id: " << from_id << endl;
    cout << "adj_list[from_id].size(): " << adj_list[from_id].size() << endl;
    for(auto it2 = adj_list[from_id].begin(); it2 != adj_list[from_id].end(); it2++)
