@@ -119,8 +119,8 @@ void Graph::transform(){
 	}
    }
 
-   cout << "number of edges after transform: " << edge_cnt << endl;
-   cout << "number of nodes after transform: " << index << endl;
+   cerr << "number of edges after transform: " << edge_cnt << endl;
+   cerr << "number of nodes after transform: " << index << endl;
 
    //filling up the reverse adjacency list:
    rev_adjList.resize(index);
@@ -236,33 +236,26 @@ void Graph::earliest_arrival(int source)
     set<int>::iterator it; 
     for(it = Vin[source].begin(); it != Vin[source].end(); it++){
 	visited[*it] = true;
-        //cout << "node " << node_list[*it].u << " pushed into the queu. Node id: " << *it << "node time: " << node_list[*it].t << endl; 
         Q.push(*it);
     }
 
     while(!Q.empty()){
 	int node = Q.front(); 
-        //cout << "node " << node_list[node].u << " extracted from Q, node_id(node): " << node << endl;
 	Q.pop();
-	//cout << "adj_list[node].size(): " << adj_list[node].size() << endl;
 	for(auto neighbor=adj_list[node].begin(); neighbor!=adj_list[node].end(); neighbor++){
 	    /*TO BE OPTIMIZED*/
 	    /*the time we enter the "source node" doesn't matter, but the time we exit it does*/
 	    int exitTime = node_list[neighbor->first].t - neighbor->second;
-	    //cout << "exit time: " << exitTime << endl;
 	    if(exitTime < t_start || exitTime > t_end)
 		continue;
 	    /*UP TO HERE*/
 	    int nID = neighbor->first; 
 	    Node neiNode = node_list[nID];
-	    //cout << "neighbor: " << neiNode.u << endl;
 	    if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
 		visited[nID] = true; 
-		//cout << "neighbor pushed into Q" << endl;
 		Q.push(nID);
 		if(neiNode.t < distances[neiNode.u]){
 		   distances[neiNode.u] = neiNode.t;
-		  // cout << "neighbor distance updated" << endl; 
 		}
 	    }
 	}

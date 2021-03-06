@@ -158,8 +158,8 @@ void Graph::transform(){
         }
    }
 	
-   cout << "number of nodes after transformation: " << node_list.size() << endl;
-   cout << "number of edges after transformation: " << edgeCnt << endl;
+   cerr << "number of nodes after transformation: " << node_list.size() << endl;
+   cerr << "number of edges after transformation: " << edgeCnt << endl;
 }
 void Graph::print_adjList(){  
    cout << "(u1, t1, Vin1/Vout1) (u2, t2, Vin2/Vout2) W" << endl; 

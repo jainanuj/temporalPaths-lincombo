@@ -128,8 +128,8 @@ void Graph::transform(){
 	}
    }
 
-   cout << "number of edges after transform: " << edge_cnt << endl;
-   cout << "number of nodes after transform: " << index << endl;
+   cerr << "number of edges after transform: " << edge_cnt << endl;
+   cerr << "number of nodes after transform: " << index << endl;
 
    //filling up the reverse adjacency list:
    rev_adjList.resize(index);
