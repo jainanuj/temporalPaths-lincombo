@@ -140,7 +140,7 @@ void Graph::transform(){
    }
 
    //for debugging:
-   print_adjList();
+   //print_adjList();
 
 
    //for debugging
@@ -244,34 +244,27 @@ void Graph::earliest_arrival(int source)
     /*initializing Q*/
     set<int>::iterator it; 
     for(it = Vin[source].begin(); it != Vin[source].end(); it++){
-	visited[*it] = true;
-        //cout << "node " << node_list[*it].u << " pushed into the queu. Node id: " << *it << "node time: " << node_list[*it].t << endl; 
+	visited[*it] = true; 
         Q.push(*it);
     }
 
     while(!Q.empty()){
 	int node = Q.front(); 
-        //cout << "node " << node_list[node].u << " extracted from Q, node_id(node): " << node << endl;
 	Q.pop();
-	//cout << "adj_list[node].size(): " << adj_list[node].size() << endl;
 	for(auto neighbor=adj_list[node].begin(); neighbor!=adj_list[node].end(); neighbor++){
 	    /*TO BE OPTIMIZED*/
 	    /*the time we enter the "source node" doesn't matter, but the time we exit it does*/
 	    int exitTime = node_list[neighbor->first].t - neighbor->second;
-	    //cout << "exit time: " << exitTime << endl;
 	    if(exitTime < t_start || exitTime > t_end)
 		continue;
 	    /*UP TO HERE*/
 	    int nID = neighbor->first; 
 	    Node neiNode = node_list[nID];
-	    //cout << "neighbor: " << neiNode.u << endl;
 	    if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
-		visited[nID] = true; 
-		//cout << "neighbor pushed into Q" << endl;
+		visited[nID] = true;
 		Q.push(nID);
 		if(neiNode.t < distances[neiNode.u]){
-		   distances[neiNode.u] = neiNode.t;
-		  // cout << "neighbor distance updated" << endl; 
+		   distances[neiNode.u] = neiNode.t; 
 		}
 	    }
 	}
@@ -385,9 +378,6 @@ void Graph::fastest(int source)
 		
     /*define and initialize data structures*/	
     vector<pair<int, int>> startPoints;
-    /*for(int i : Vout[source])
-	if(node_list[i].t >= t_start && node_list[i].t <= t_end)
-	  startPoints.push_back(make_pair(i, node_list[i].t)); */
     for(auto s_it = outVec[source].begin(); s_it != outVec[source].end(); s_it++){
 	if(s_it->second >= t_start && s_it->second <= t_end)
 	  startPoints.push_back(*s_it);
@@ -403,12 +393,7 @@ void Graph::fastest(int source)
 	visited[*s_it] = true;
 
     for(auto it = startPoints.begin(); it != startPoints.end(); it++){
-	//int ts = node_list[it->first].t;
 	int ts = it->second;
-
-        /*cout << "startPoint:" << endl;	
-	cout << "node: " << it->first << ", t: " << it->second << endl;
-	cout << "ts: " << ts << endl;*/
 
 	//here it->first is a neighbor of the source
         visited[it->first] = true; 
@@ -417,36 +402,19 @@ void Graph::fastest(int source)
 	int tmp_u = node_list[it->first].u;
 	if(tmp_time < distances[tmp_u]){
 	   distances[tmp_u] = tmp_time;
-	   //cout << "distance updated to " << tmp_time << endl;
 	}
 
 	while(!Q.empty()){
-	    /*cout << "at the beginning of the while loop" << endl;
-	    cout << "visited: " << endl;
-	    for(int ii=0; ii<visited.size(); ii++)	
-		if(visited[ii])
-			cout << "true, ";
-		else
-			cout << "false, ";
-	    cout << endl;
-	    cout << "distances:" << endl;
-	    for(int ii=0; ii<distances.size(); ii++)
-		cout << distances[ii] << ", ";
-	    cout << endl;*/
 	    int node = Q.front(); 
 	    Q.pop();
-	    //cout << "node " << node_list[node].u << "popped" << endl;
 	    for(auto neighbor=adj_list[node].begin(); neighbor!=adj_list[node].end(); neighbor++){
 		int nID = neighbor->first; 
 		Node neiNode = node_list[nID];
-	        /*cout << "neighbor: " << endl;
-		cout << "u: " << neiNode.u << ", t: " << neiNode.t << endl;*/
 		if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
 		   visited[nID] = true; 
 		   Q.push(nID);
 		   if((neiNode.t-ts) < distances[neiNode.u]){
 		      distances[neiNode.u] = (neiNode.t-ts); 
-		      //cout << "neighbor distance updated to " << neiNode.t-ts << endl;
 		   }
 		}
 	    }

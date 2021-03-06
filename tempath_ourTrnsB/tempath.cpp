@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
     g.dominatedRemoval();
     //cout << "after dominated removal" << endl;
     g.transform();
-    return 0; 
+    //return 0; 
     //cout << "after transform" << endl;
     //g.print_adjList(); //for debugging
 
