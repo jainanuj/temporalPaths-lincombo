@@ -19,11 +19,8 @@ int main(int argc, char* argv[]){
     
     //added by sanaz:
     g.dominatedRemoval();
-    //cout << "after dominated removal" << endl;
     g.transform();
     //return 0; 
-    //cout << "after transform" << endl;
-    //g.print_adjList(); //for debugging
 
     /*modified by sanaz*/
     int numS = stoi(argv[3]);
