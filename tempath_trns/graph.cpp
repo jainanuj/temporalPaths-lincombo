@@ -5,15 +5,8 @@ Graph::Graph(const char* filePath)
     FILE* file = fopen(filePath,"r");
 	int x;
    	x=fscanf(file, "%d %d",&V, &dynamic_E);
-
-	//arr_time.resize(V);
-	//f_time.resize(V);
-	//ft_timepair.resize(V);
-	//st_timepair.resize(V);
     
     //added by sanaz:
-    Vin.resize(V);
-    Vout.resize(V);
     distances.resize(V); 
     //---------------
 	
@@ -81,24 +74,21 @@ void Graph::transform(){
    //Node tmpNode; 
    int t; 
    for(int i=0; i<V; i++){
+	vinStart.push_back(index);
 	for(it=Tin[i].begin(); it!=Tin[i].end(); it++){
 	  t = *it;
-	  //tmpNode = new Node(i, t, true);
           Node tmpNode(i, t, true); 
-	  node_list.push_back(tmpNode);
-	  Vin[i].insert(index);
+	  vertexList.push_back(tmpNode);
 	  inMap[make_pair(i, t)] = index++;
 	}
+	voutStart.push_back(index);
 	for(it=Tout[i].begin(); it!=Tout[i].end(); it++){
 	  t = *it;
-	  //tmpNode = new Node(i, t, false);
 	  Node tmpNode(i, t, false); 
-	  node_list.push_back(tmpNode);
-	  Vout[i].insert(index);
+	  vertexList.push_back(tmpNode);
 	  outMap[make_pair(i, t)] = index++;
 	}
-   }
-   adj_list.resize(index); 
+   } 
    
    int edgeCnt = 0; 
 
@@ -117,11 +107,14 @@ void Graph::transform(){
 	   int tOut = *tmp_it; 
 	   if(matched.find(tOut) == matched.end()){ 
 		matched.insert(tOut);
-	   	adj_list[inMap[make_pair(i, tIn)]].push_back(make_pair(outMap[make_pair(i, tOut)], 0));
+	   	vertexList[inMap[make_pair(i, tIn)]].adjList.push_back(make_pair(outMap[make_pair(i, tOut)], 0));
 		edgeCnt++;
 	   }
 	}
    }
+   
+   //a dummy value, so that accessing vinStart[source+1] is not out-of-bound
+   vinStart.push_back(index);
 
    //edge creation step b:
    set<int>::iterator it2; 
@@ -129,7 +122,7 @@ void Graph::transform(){
       it = it2 = Tin[i].begin(); 
       if(it2!=Tin[i].end()) it2++;
       while(it2 != Tin[i].end()){  
-	   adj_list[inMap[make_pair(i, *it)]].push_back(make_pair(inMap[make_pair(i, *it2)], 0));
+	   vertexList[inMap[make_pair(i, *it)]].adjList.push_back(make_pair(inMap[make_pair(i, *it2)], 0));
 	   it++;
 	   it2++;
 	   edgeCnt++;
@@ -137,7 +130,7 @@ void Graph::transform(){
       it = it2 = Tout[i].begin();
       if(it2!=Tout[i].end()) it2++;
       while(it2 != Tout[i].end()){ 
-	   adj_list[outMap[make_pair(i, *it)]].push_back(make_pair(outMap[make_pair(i, *it2)], 0));
+	   vertexList[outMap[make_pair(i, *it)]].adjList.push_back(make_pair(outMap[make_pair(i, *it2)], 0));
 	   it++;
 	   it2++;
 	   edgeCnt++;
@@ -146,40 +139,43 @@ void Graph::transform(){
 
    //edge creation step c: 
    for(Edge e : edge_list){
-	adj_list[outMap[make_pair(e.u, e.t)]].push_back(make_pair(inMap[make_pair(e.v, e.t+e.w)], e.w));
+	vertexList[outMap[make_pair(e.u, e.t)]].adjList.push_back(make_pair(inMap[make_pair(e.v, e.t+e.w)], e.w));
 	edgeCnt++;
    }
 
    //filling up the reverse adjacency list:
    rev_adjList.resize(index);
    for(int i=0; i<index; i++){
-	for(auto neigh=adj_list[i].begin(); neigh!=adj_list[i].end(); neigh++){
+	for(auto neigh=vertexList[i].adjList.begin(); neigh!=vertexList[i].adjList.end(); neigh++){
 	    rev_adjList[neigh->first].push_back(i); 
         }
    }
 	
-   cerr << "number of nodes after transformation: " << node_list.size() << endl;
+   cerr << "number of nodes after transformation: " << vertexList.size() << endl;
    cerr << "number of edges after transformation: " << edgeCnt << endl;
+
+   //for debugging:
+   //print_adjList();
 }
 void Graph::print_adjList(){  
    cout << "(u1, t1, Vin1/Vout1) (u2, t2, Vin2/Vout2) W" << endl; 
 
-   for(int i=0; i<adj_list.size(); i++){
+   for(int i=0; i<vertexList.size(); i++){
 
-     for(int j=0; j<adj_list[i].size(); j++){	
+     for(int j=0; j<vertexList[i].adjList.size(); j++){	
 
         //print out the source node 
-	cout << "(" << node_list[i].u << ", " << node_list[i].t << ", "; 
-	if(node_list[i].isVin)
+	cout << "(" << vertexList[i].u << ", " <<vertexList[i].t << ", "; 
+	if(vertexList[i].isVin)
 	   cout << "Vin) ";
 	else 
 	   cout << "Vout) ";
 
 	//print out the destination node
-	int id = adj_list[i][j].first;
-	int w = adj_list[i][j].second; 
-        cout << "(" << node_list[id].u << ", " << node_list[id].t << ", ";
-	if(node_list[id].isVin)
+	int id = vertexList[i].adjList[j].first;
+	int w = vertexList[i].adjList[j].second; 
+        cout << "(" << vertexList[id].u << ", " << vertexList[id].t << ", ";
+	if(vertexList[id].isVin)
 	   cout << "Vin) ";
 	else 
 	   cout << "Vout) ";
@@ -250,24 +246,23 @@ void Graph::earliest_arrival(int source)
     t.start();
 	
     /*define and initialize data structures*/	
-    vector<bool> visited(node_list.size(), false);
+    vector<bool> visited(vertexList.size(), false);
     queue<int> Q; 
 
     /*initializing Q*/
-    set<int>::iterator it; 
-    for(it = Vout[source].begin(); it != Vout[source].end(); it++){
-	if(node_list[*it].t >= t_start && node_list[*it].t <= t_end){
-	   visited[*it] = true; //it->first: t, it->second: newID
-           Q.push(*it);
+    for(int it = voutStart[source]; it < vinStart[source+1]; it++){
+	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end){
+	   visited[it] = true; //it->first: t, it->second: newID
+           Q.push(it);
         }
     }
 
     while(!Q.empty()){
 	int node = Q.front(); 
 	Q.pop();
-	for(auto neighbor=adj_list[node].begin(); neighbor!=adj_list[node].end(); neighbor++){
+	for(auto neighbor=vertexList[node].adjList.begin(); neighbor!=vertexList[node].adjList.end(); neighbor++){
 	    int nID = neighbor->first; 
-	    Node neiNode = node_list[nID];
+	    Node neiNode = vertexList[nID];
 	    if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
 		visited[nID] = true; 
 		Q.push(nID);
@@ -310,15 +305,14 @@ void Graph::latest_departure(int source)
     t.start();
 	
     /*define and initialize data structures*/	
-    vector<bool> visited(node_list.size(), false);
+    vector<bool> visited(vertexList.size(), false);
     queue<int> Q; 
 
     /*initializing Q*/
-    set<int>::iterator it; 
-    for(it = Vin[source].begin(); it != Vin[source].end(); it++){
-	if(node_list[*it].t >= t_start && node_list[*it].t <= t_end){
-	   visited[*it] = true; //it points to the index of the node
-           Q.push(*it);
+    for(int it = vinStart[source]; it < voutStart[source]; it++){
+	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end){
+	   visited[it] = true; //it points to the index of the node
+           Q.push(it);
         }
     }
 
@@ -327,7 +321,7 @@ void Graph::latest_departure(int source)
 	Q.pop();
 	for(auto neighbor=rev_adjList[node].begin(); neighbor!=rev_adjList[node].end(); neighbor++){
 	    int nID = *neighbor; 
-	    Node neiNode = node_list[nID];
+	    Node neiNode = vertexList[nID];
 	    if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
 		visited[nID] = true; 
 		Q.push(nID);
@@ -372,29 +366,29 @@ void Graph::fastest(int source)
 		
     /*define and initialize data structures*/	
     vector<pair<int, int>> startPoints;
-    for(int i : Vout[source])
-	if(node_list[i].t >= t_start && node_list[i].t <= t_end)
-	  startPoints.push_back(make_pair(i, node_list[i].t)); 
+    for(int i=voutStart[source]; i<vinStart[source+1]; i++)
+	if(vertexList[i].t >= t_start && vertexList[i].t <= t_end)
+	  startPoints.push_back(make_pair(i, vertexList[i].t)); 
     sort(startPoints.begin( ), startPoints.end( ), [ ](const pair<int, int>& p1, const pair<int, int>& p2){
        return p1.second > p2.second;
     });
-    vector<bool> visited(node_list.size(), false);
+    vector<bool> visited(vertexList.size(), false);
     queue<int> Q; 
 
     //newly added: what if we get to Vin[source] at some point?
-    for(auto s_it = Vin[source].begin(); s_it != Vin[source].end(); s_it++)
-	visited[*s_it] = true;
+    for(int s_it = vinStart[source]; s_it < voutStart[source]; s_it++)
+	visited[s_it] = true;
 
     for(auto it = startPoints.begin(); it != startPoints.end(); it++){
-	int ts = node_list[it->first].t;
+	int ts = vertexList[it->first].t;
         visited[it->first] = true; 
         Q.push(it->first);
 	while(!Q.empty()){
 	    int node = Q.front(); 
 	    Q.pop();
-	    for(auto neighbor=adj_list[node].begin(); neighbor!=adj_list[node].end(); neighbor++){
+	    for(auto neighbor=vertexList[node].adjList.begin(); neighbor!=vertexList[node].adjList.end(); neighbor++){
 		int nID = neighbor->first; 
-		Node neiNode = node_list[nID];
+		Node neiNode = vertexList[nID];
 		if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
 		   visited[nID] = true; 
 		   Q.push(nID);
@@ -440,13 +434,13 @@ void Graph::shortest(int source)
     /*defining and initializing data structures*/
     typedef pair<int, int> iPair; 	
     priority_queue< iPair, vector <iPair> , greater<iPair> > pq; //pairs of <distance, id> sorted in increasing order of distance
-    vector<int> local_dist(adj_list.size(), infinity); //distance vector for the nodes in the transformed graph
-    vector<bool> done(adj_list.size(), false); //keeping track of the nodes whose distance is established
+    vector<int> local_dist(vertexList.size(), infinity); //distance vector for the nodes in the transformed graph
+    vector<bool> done(vertexList.size(), false); //keeping track of the nodes whose distance is established
     
-    for(auto it=Vout[source].begin(); it!=Vout[source].end(); it++)
-	if(node_list[*it].t >= t_start && node_list[*it].t <= t_end){
-	   pq.push(make_pair(0, *it));
-	   local_dist[*it] = 0; 
+    for(int it = voutStart[source]; it < vinStart[source+1]; it++)
+	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end){
+	   pq.push(make_pair(0, it));
+	   local_dist[it] = 0; 
 	} 
 
     while(!pq.empty()){
@@ -455,9 +449,9 @@ void Graph::shortest(int source)
 	if(done[node]) 
 	   continue; 
 	done[node] = true; 
-	for(auto neigh=adj_list[node].begin(); neigh!=adj_list[node].end(); neigh++){
+	for(auto neigh=vertexList[node].adjList.begin(); neigh!=vertexList[node].adjList.end(); neigh++){
 	   int neiID = neigh->first;  
-	   if(!done[neiID] && node_list[neiID].t >= t_start && node_list[neiID].t <= t_end){
+	   if(!done[neiID] && vertexList[neiID].t >= t_start && vertexList[neiID].t <= t_end){
 		int newDist = local_dist[node]+neigh->second;
 		if(newDist < local_dist[neiID]){
 		   local_dist[neiID] = newDist; 
@@ -467,9 +461,9 @@ void Graph::shortest(int source)
   	}
     }
 
-    for(int i=0; i<adj_list.size(); i++)
-	if(node_list[i].isVin && node_list[i].t >= t_start && node_list[i].t <= t_end){
-	   int u = node_list[i].u; 
+    for(int i=0; i<vertexList.size(); i++)
+	if(vertexList[i].isVin && vertexList[i].t >= t_start && vertexList[i].t <= t_end){
+	   int u = vertexList[i].u; 
 	   distances[u] = min(distances[u], local_dist[i]);
 	}
 	

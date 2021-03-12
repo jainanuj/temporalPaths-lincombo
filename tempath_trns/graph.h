@@ -39,6 +39,7 @@ struct Edge
 struct Node{
     int u; //the node id in the non-transformed graph
     int t; //the time stamp corresponding to Vin/Vout
+    vector<pair<int, int>> adjList;
     bool isVin; //true if this node belongs to Vin(u) and false if it belongs to Vout(u)
     Node() {}
     Node(int _u, int _t, bool _isVin){
@@ -104,10 +105,9 @@ public:
     int numSources; 
 
     //added by sanaz
-    vector<set<int>> Vin; //for each node u contains Vin(u) as a set of newIDs
-    vector<set<int>> Vout; //for each node u contains Vout(u) as a set of newIDs
-    vector<Node> node_list; //a list of 'Node's kept for reference
-    vector<vector<pair<int, int>>> adj_list; //<node index(int the transformed graph) --> list<neighbor index, weight>> 
+    vector<Node> vertexList; //a list of vertices in the transformed graph, sorted by u
+    vector<int> vinStart; //an index into the vertexList: Vin set for node i (in the transformed graph) is in vertexList[vinStart[i], voutStart[i])
+    vector<int> voutStart; //an index into the vertexList: Vin set for node i (in the transformed graph) is in vertexList[voutStart[i], vinStart[i+1]) 
     vector<int> distances; 
     vector<vector<int>> rev_adjList; //adjacency list with reversed edges used in "latest" function
     //--------------

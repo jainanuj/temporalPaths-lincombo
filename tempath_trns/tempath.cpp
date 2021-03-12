@@ -20,7 +20,7 @@ int main(int argc, char* argv[]){
     //added by sanaz:
     g.dominatedRemoval();
     g.transform();
-    //g.print_adjList(); //for debugging
+    //return 0; 
 
     /*modified by sanaz*/
     int numS = stoi(argv[3]);
