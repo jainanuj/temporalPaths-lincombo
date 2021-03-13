@@ -289,24 +289,14 @@ void Graph::latest_departure(int source)
 	
     /*define and initialize data structures*/	
     vector<bool> visited(vertexList.size(), false); //nodes enqueued
-    queue<int> Q;
-    vector<set<int>> outSeen; /*To be replaced by a more optimized DS*/
-    outSeen.resize(vertexList.size()); 
+    queue<int> Q; 
 
     /*initializing Q*/
     /*put all the out times of source in outSeen[]*/
-    //set<int>::iterator it; 
-    //for(it = Vin[source].begin(); it != Vin[source].end(); it++){
     for(int it = vinStart[source]; it < vinStart[source+1]; it++){
 	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end){
 	   visited[it] = true; //it points to the index of the node
            Q.push(it);
-	   /*TO BE OPTIMIZED*/
-	   for(auto link_it = vertexList[it].adjList.begin(); link_it != vertexList[it].adjList.end(); link_it++){
-	       int exitTime = vertexList[link_it->first].t - link_it->second;
-	       outSeen[it].insert(exitTime);
-	   }
-	   /*UP TO HERE*/
         }
     } 
 
@@ -318,13 +308,12 @@ void Graph::latest_departure(int source)
 	    int exitTime = vertexList[node].t - neighbor->second; 
 	    Node neiNode = vertexList[nID]; //eniNode.t is the in time
  	    /*Vin node can be redundant, but its out time should not be already checked*/
-	    if(neiNode.t >= t_start && neiNode.t <= t_end && outSeen[nID].find(exitTime) == outSeen[nID].end()){
+	    if(neiNode.t >= t_start && neiNode.t <= t_end){
 	        if(!visited[nID]){
   		   /*otherwise, there is no point in putting a redundant Vin in Q*/
 		   visited[nID] = true; 
 		   Q.push(nID);
 		}
-		outSeen[nID].insert(exitTime);
 		if(exitTime > distances[neiNode.u])
 		   distances[neiNode.u] = exitTime; 
 	    }
