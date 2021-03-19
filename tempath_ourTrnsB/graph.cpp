@@ -12,7 +12,6 @@ Graph::Graph(const char* filePath)
 	//st_timepair.resize(V);
     
     //added by sanaz:
-    outVec.resize(V);
     distances.resize(V); 
     //---------------
 	
@@ -60,49 +59,42 @@ void Graph::dominatedRemoval(){
 
 //added by sanaz
 void Graph::transform(){
-   vector<set<int>> Tin; //the set of distinct in times for each node
-   Tin.resize(V);
+   vector<set<int>> Tout; //the set of distinct out times for each node
+   Tout.resize(V);
    for(Edge e : edge_list){
-	Tin[e.v].insert(e.t+e.w);
+	Tout[e.u].insert(e.t);
    }
 
    set <int>::iterator it; 
    //to map (u, t) to their corresponding IDs in the transformed graph
-   map<pair<int, int>, int> inMap;
+   map<pair<int, int>, int> outMap;
    int index = 0; 
    int t; 
    for(int i=0; i<V; i++){
-	vinStart.push_back(index);
-	//newly added to fix a bug:
-	Tin[i].insert(0);
+	voutStart.push_back(index);
+	Tout[i].insert(infinity); //dumb node, so that the nodes with an empty Tout but non-empty Tin are accounted for
 	//elements in Tin[i] are sorted in increasing order of t
-	for(it=Tin[i].begin(); it!=Tin[i].end(); it++){
+	for(it=Tout[i].begin(); it!=Tout[i].end(); it++){
 	  t = *it;
           Node tmpNode(i, t); 
 	  vertexList.push_back(tmpNode);
-	  inMap[make_pair(i, t)] = index++;
+	  outMap[make_pair(i, t)] = index++;
 	}
    }
-   vinStart.push_back(index); //so that we can use vinStart[i]..vinStart[i+1] for the last node
+   voutStart.push_back(index); //so that we can use voutStart[i]..voutStart[i+1] for the last node
 
    /*cout << "vertexList:" << endl;
    for(int i=0; i<vertexList.size(); i++)
 	cout << "u: " << vertexList[i].u << ", t: " << vertexList[i].t << endl;*/
 
-   //filling in the outVec vector:
-   for(Edge e : edge_list){
-	int neighID = inMap[make_pair(e.v, e.t+e.w)];
-	outVec[e.u].push_back(make_pair(neighID, e.t));
-   } 
-
-   //edge creation step 1: making the Vin node chain
+   //edge creation step 1: making the Vout node chain
    int edge_cnt = 0; 
    set<int>::iterator it2; 
    for(int i=0; i<V; i++){
-      it = it2 = Tin[i].begin(); 
-      if(it2!=Tin[i].end()) it2++;
-      while(it2 != Tin[i].end()){  
-	   vertexList[inMap[make_pair(i, *it)]].adjList.push_back(make_pair(inMap[make_pair(i, *it2)], 0));
+      it = it2 = Tout[i].begin(); 
+      if(it2!=Tout[i].end()) it2++;
+      while(it2 != Tout[i].end()){  
+	   vertexList[outMap[make_pair(i, *it)]].adjList.push_back(make_pair(outMap[make_pair(i, *it2)], 0));
 	   it++;
 	   it2++;
 	   edge_cnt++;
@@ -112,12 +104,12 @@ void Graph::transform(){
 
    //edge creation step 2: adding the weighted links
    for(Edge e : edge_list){
-	int v_index = inMap[make_pair(e.v, e.t+e.w)];
-        //we are looking for the largest t less that e.t
-	for(auto set_it = Tin[e.u].rbegin(); set_it != Tin[e.u].rend(); set_it++){
+	int u_index = outMap[make_pair(e.u, e.t)];
+        //we are looking for the smallest t greater that e.t+e.w
+	for(auto set_it = Tout[e.v].begin(); set_it != Tout[e.v].end(); set_it++){
 	   t = *set_it;
-	   if(t <= e.t){
-	      int u_index = inMap[make_pair(e.u, t)];
+	   if(t >= e.t+e.w){
+	      int v_index = outMap[make_pair(e.v, t)];
 	      vertexList[u_index].adjList.push_back(make_pair(v_index, e.w));
 	      edge_cnt++; // just for debugging
 	      break;
@@ -197,7 +189,7 @@ void Graph::initial_query(const char* filePath, int numS)
 
 }
 
-void Graph::run_earliest_arrival()
+/*void Graph::run_earliest_arrival()
 {
 	time_sum=0;
 	
@@ -212,24 +204,19 @@ void Graph::run_earliest_arrival()
     }
 	
 	print_avg_time();
-}
+}*/
 
 //modified by sanaz
-void Graph::earliest_arrival(int source)
+/*void Graph::earliest_arrival(int source)
 {
     Timer t;
     t.start();
 	
-    /*define and initialize data structures*/	
+    //define and initialize data structures	
     vector<bool> visited(vertexList.size(), false);
     queue<int> Q; 
 
-    /*initializing Q*/
-    /*set<int>::iterator it; 
-    for(it = Vin[source].begin(); it != Vin[source].end(); it++){
-	visited[*it] = true; 
-        Q.push(*it);
-    }*/
+    //initializing Q
     for(int i=vinStart[source]; i<vinStart[source+1]; i++){
 	Q.push(i);
     }
@@ -238,12 +225,12 @@ void Graph::earliest_arrival(int source)
 	int node = Q.front(); 
 	Q.pop();
 	for(auto neighbor=vertexList[node].adjList.begin(); neighbor!=vertexList[node].adjList.end(); neighbor++){
-	    /*TO BE OPTIMIZED*/
-	    /*the time we enter the "source node" doesn't matter, but the time we exit it does*/
+	    //TO BE OPTIMIZED
+	    //the time we enter the "source node" doesn't matter, but the time we exit it does
 	    int exitTime = vertexList[neighbor->first].t - neighbor->second;
 	    if(exitTime < t_start || exitTime > t_end)
 		continue;
-	    /*UP TO HERE*/
+	    //UP TO HERE
 	    int nID = neighbor->first; 
 	    Node neiNode = vertexList[nID];
 	    if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
@@ -259,13 +246,13 @@ void Graph::earliest_arrival(int source)
     t.stop();
     time_sum += t.GetRuntime();
 
-    /*for debugging only*/
+    //for debugging only
     for(int i=0; i<distances.size(); i++)
         cout << distances[i] << endl;
-}
+}*/
 //-----------------
 
-void Graph::run_latest_departure()
+/*void Graph::run_latest_departure()
 {
 	time_sum=0;
 	
@@ -280,19 +267,19 @@ void Graph::run_latest_departure()
     }
 	
 	print_avg_time();
-}
+}*/
 
-void Graph::latest_departure(int source)
+/*void Graph::latest_departure(int source)
 {
     Timer t;
     t.start();
 	
-    /*define and initialize data structures*/	
+    //define and initialize data structures	
     vector<bool> visited(vertexList.size(), false); //nodes enqueued
     queue<int> Q; 
 
-    /*initializing Q*/
-    /*put all the out times of source in outSeen[]*/
+    //initializing Q
+    //put all the out times of source in outSeen[]
     for(int it = vinStart[source]; it < vinStart[source+1]; it++){
 	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end){
 	   visited[it] = true; //it points to the index of the node
@@ -307,10 +294,10 @@ void Graph::latest_departure(int source)
 	    int nID = neighbor->first;
 	    int exitTime = vertexList[node].t - neighbor->second; 
 	    Node neiNode = vertexList[nID]; //eniNode.t is the in time
- 	    /*Vin node can be redundant, but its out time should not be already checked*/
+ 	    //Vin node can be redundant, but its out time should not be already checked
 	    if(neiNode.t >= t_start && neiNode.t <= t_end){
 	        if(!visited[nID]){
-  		   /*otherwise, there is no point in putting a redundant Vin in Q*/
+  		   //otherwise, there is no point in putting a redundant Vin in Q
 		   visited[nID] = true; 
 		   Q.push(nID);
 		}
@@ -323,10 +310,10 @@ void Graph::latest_departure(int source)
     t.stop();
     time_sum += t.GetRuntime();
 
-    /*for debugging only*/
+    //for debugging only
     for(int i=0; i<distances.size(); i++)
         cout << distances[i] << endl;
-}
+}*/
 
 void Graph::run_fastest()
 {
@@ -351,46 +338,30 @@ void Graph::fastest(int source)
 {
     Timer t;
     t.start();
-		
-    /*define and initialize data structures*/	
-    vector<pair<int, int>> startPoints;
-    for(auto s_it = outVec[source].begin(); s_it != outVec[source].end(); s_it++){
-	if(s_it->second >= t_start && s_it->second <= t_end)
-	  startPoints.push_back(*s_it);
-    }
-    sort(startPoints.begin( ), startPoints.end( ), [ ](const pair<int, int>& p1, const pair<int, int>& p2){
-       return p1.second > p2.second;
-    });
+
     vector<bool> visited(vertexList.size(), false);
-    queue<int> Q; 
+    queue<int> Q;
+    for(int it=voutStart[source]; it<voutStart[source+1]; it++){
+	visited[it] = true;
+    }
 
-    //newly added: what if we get to Vin[source] at some point?
-    for(int s_it = vinStart[source]; s_it < vinStart[source+1]; s_it++)
-	visited[s_it] = true;
-
-    for(auto it = startPoints.begin(); it != startPoints.end(); it++){
-	int ts = it->second;
-
-	//here it->first is a neighbor of the source
-        visited[it->first] = true; 
-        Q.push(it->first);
-	int tmp_time =  vertexList[it->first].t-ts;
-	int tmp_u = vertexList[it->first].u;
-	if(tmp_time < distances[tmp_u]){
-	   distances[tmp_u] = tmp_time;
-	}
-
+    for(int it=voutStart[source+1]-1; it>=voutStart[source]; it--){
+	int ts = vertexList[it].t; //start time
+	Q.push(it);
 	while(!Q.empty()){
 	    int node = Q.front(); 
 	    Q.pop();
 	    for(auto neighbor=vertexList[node].adjList.begin(); neighbor!=vertexList[node].adjList.end(); neighbor++){
-		int nID = neighbor->first; 
+		int nID = neighbor->first; 	
 		Node neiNode = vertexList[nID];
-		if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
-		   visited[nID] = true; 
-		   Q.push(nID);
-		   if((neiNode.t-ts) < distances[neiNode.u]){
-		      distances[neiNode.u] = (neiNode.t-ts); 
+		int inTime = vertexList[node].t + neighbor->second;	
+		if(inTime >= t_start && inTime <= t_end){
+		   if(!visited[nID]){
+		      visited[nID] = true; 
+		      Q.push(nID);
+		   }
+		   if((inTime-ts) < distances[neiNode.u]){
+		      distances[neiNode.u] = (inTime-ts); 
 		   }
 		}
 	    }
@@ -400,13 +371,13 @@ void Graph::fastest(int source)
     t.stop();
     time_sum += t.GetRuntime();
 
-    /*for debugging only*/
+    //for debugging only
     for(int i=0; i<distances.size(); i++)
 	cout << distances[i] << endl;
 }
 //-----------------
 
-void Graph::run_shortest()
+/*void Graph::run_shortest()
 {
     time_sum=0;
 	
@@ -421,20 +392,19 @@ void Graph::run_shortest()
     
     print_avg_time();
 
-}
+}*/
 
-void Graph::shortest(int source)
+/*void Graph::shortest(int source)
 {
     Timer t;
     t.start();
 
-    /*defining and initializing data structures*/
+    //defining and initializing data structures
     typedef pair<int, int> iPair; 	
     priority_queue< iPair, vector <iPair> , greater<iPair> > pq; //pairs of <distance, id> sorted in increasing order of distance
     vector<int> local_dist(vertexList.size(), infinity); //distance vector for the nodes in the transformed graph
     vector<bool> done(vertexList.size(), false); //keeping track of the nodes whose distance is established
     
-    //for(auto it=Vin[source].begin(); it!=Vin[source].end(); it++){
     for(int it=vinStart[source]; it < vinStart[source+1]; it++){
         pq.push(make_pair(0, it));
 	local_dist[it] = 0; 
@@ -447,12 +417,12 @@ void Graph::shortest(int source)
 	   continue; 
 	done[node] = true; 
 	for(auto neigh=vertexList[node].adjList.begin(); neigh!=vertexList[node].adjList.end(); neigh++){
-	   /*TO BE OPTIMIZED*/
-	   /*Vin[source] need not be in range, but the exit times should be*/
+	   //TO BE OPTIMIZED
+	   //Vin[source] need not be in range, but the exit times should be
 	   int exitTime = vertexList[neigh->first].t - neigh->second;
 	   if(exitTime < t_start || exitTime > t_end)
 		continue;
-	   /*UP TO HERE*/
+	   //UP TO HERE
 	   int neiID = neigh->first;  
 	   //vertexList[neiID].t represents "in time" of a Vin node
 	   if(!done[neiID] && vertexList[neiID].t >= t_start && vertexList[neiID].t <= t_end){
@@ -474,11 +444,11 @@ void Graph::shortest(int source)
     t.stop();
     time_sum += t.GetRuntime();
 
-    /*for debugging only*/
+    //for debugging only
     for(int i=0; i<distances.size(); i++)
 	cout << distances[i] << endl; 
 
-}
+}*/
 
 void Graph::print_avg_time()
 {

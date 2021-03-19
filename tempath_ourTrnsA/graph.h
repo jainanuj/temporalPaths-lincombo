@@ -65,14 +65,14 @@ public:
     void initial_ds_ld();
     void initial_ds_f();
     void initial_ds_s();*/
-    void run_earliest_arrival(); 
+    /*void run_earliest_arrival(); 
     void earliest_arrival(int source);
     void run_latest_departure(); 
-    void latest_departure(int source);
+    void latest_departure(int source);*/
     void run_fastest(); 
     void fastest(int source);
-    void run_shortest(); 
-    void shortest(int source);
+    /*void run_shortest(); 
+    void shortest(int source);*/
     void print_avg_time();
     
     // for testing the correctness
@@ -103,8 +103,7 @@ public:
 
     //added by sanaz
     vector<Node> vertexList; //a list of vertices in the transformed graph, sorted by u
-    vector<int> vinStart; //an index into the vertexList: Vin set for node i (in the transformed graph) is in vertexList[vinStart[i], vinStart[i+1])
-    vector<vector<pair<int, int>>> outVec; //for each node in the original graph, cotains a list of <neighbor newID, exit time> (neighbor is a Vin node) 
+    vector<int> voutStart; //an index into the vertexList: Vin set for node i (in the transformed graph) is in vertexList[voutStart[i], voutStart[i+1]) 
     vector<int> distances; 
     vector<vector<pair<int, int>>> rev_adjList; //adjacency list with reversed edges used in "latest" function
     //--------------

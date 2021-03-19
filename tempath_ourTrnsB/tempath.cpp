@@ -39,15 +39,18 @@ int main(int argc, char* argv[]){
 
     if(!strcmp(option,"earliest"))
     {
-		g.run_earliest_arrival();
+	cout << "disactivated for now!" << endl;	
+        //g.run_earliest_arrival();
     }
     else if (!strcmp(option,"latest"))
     {
-		g.run_latest_departure();
+	cout << "disactivated for now!" << endl;	
+        //g.run_latest_departure();
     }
     else if (!strcmp(option,"shortest"))
     {
-		g.run_shortest();
+	cout << "disactivated for now!" << endl;	
+        //g.run_shortest();
     }
     else if(!strcmp(option,"fastest"))
     {
