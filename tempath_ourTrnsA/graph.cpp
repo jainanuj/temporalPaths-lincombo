@@ -319,12 +319,15 @@ void Graph::fastest(int source)
 
     vector<bool> visited(vertexList.size(), false);
     queue<int> Q;
-    for(int it=voutStart[source]; it<voutStart[source+1]; it++){
+    /*for(int it=voutStart[source]; it<voutStart[source+1]; it++){
 	visited[it] = true;
-    }
+    }*/
 
     for(int it=voutStart[source+1]-1; it>=voutStart[source]; it--){
+	visited[it] = true;
 	int ts = vertexList[it].t; //start time
+	if(ts < t_start)
+	   break;
 	Q.push(it);
 	while(!Q.empty()){
 	    int node = Q.front(); 
@@ -333,7 +336,7 @@ void Graph::fastest(int source)
 		int nID = neighbor->first; 	
 		Node neiNode = vertexList[nID];
 		int inTime = vertexList[node].t + neighbor->second;	
-		if(inTime >= t_start && inTime <= t_end){
+		if(inTime <= t_end){
 		   if(!visited[nID]){
 		      visited[nID] = true; 
 		      Q.push(nID);

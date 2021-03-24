@@ -88,8 +88,9 @@ void Graph::transform(){
 	cout << "u: " << vertexList[i].u << ", t: " << vertexList[i].t << endl;*/
 
    //edge creation step 1: making the Vout node chain
+   //we no more need chain edges in the new version
    int edge_cnt = 0; 
-   set<int>::iterator it2; 
+   /*set<int>::iterator it2; 
    for(int i=0; i<V; i++){
       it = it2 = Tout[i].begin(); 
       if(it2!=Tout[i].end()) it2++;
@@ -99,10 +100,10 @@ void Graph::transform(){
 	   it2++;
 	   edge_cnt++;
       }
-   }
+   }*/
 
 
-   //edge creation step 2: adding the weighted links
+   //edge creation step 1: adding the weighted links
    for(Edge e : edge_list){
 	int u_index = outMap[make_pair(e.u, e.t)];
         //we are looking for the smallest t greater that e.t+e.w
@@ -340,28 +341,34 @@ void Graph::fastest(int source)
     t.start();
 
     vector<bool> visited(vertexList.size(), false);
-    queue<int> Q;
-    for(int it=voutStart[source]; it<voutStart[source+1]; it++){
+    stack<int> st;
+    /*for(int it=voutStart[source]; it<voutStart[source+1]; it++){
 	visited[it] = true;
-    }
+    }*/
 
     for(int it=voutStart[source+1]-1; it>=voutStart[source]; it--){
+	visited[it] = true;
 	int ts = vertexList[it].t; //start time
-	Q.push(it);
-	while(!Q.empty()){
-	    int node = Q.front(); 
-	    Q.pop();
+	if(ts < t_start)
+	  break;
+	st.push(it);
+	while(!st.empty()){
+	    int node = st.top(); 
+	    st.pop();
 	    for(auto neighbor=vertexList[node].adjList.begin(); neighbor!=vertexList[node].adjList.end(); neighbor++){
 		int nID = neighbor->first; 	
 		Node neiNode = vertexList[nID];
-		int inTime = vertexList[node].t + neighbor->second;	
-		if(inTime >= t_start && inTime <= t_end){
-		   if(!visited[nID]){
-		      visited[nID] = true; 
-		      Q.push(nID);
-		   }
-		   if((inTime-ts) < distances[neiNode.u]){
-		      distances[neiNode.u] = (inTime-ts); 
+		int inTime = vertexList[node].t + neighbor->second;
+		if(inTime <= t_end){
+		   if((inTime-ts) < distances[neiNode.u])
+			 distances[neiNode.u] = (inTime-ts);
+                }
+		if(!visited[nID]){
+		   visited[nID] = true;
+		   st.push(nID);		      
+		   for(int it2=nID+1; it2 <voutStart[neiNode.u+1]; it2++){
+		       visited[it2] = true;
+		       st.push(it2);
 		   }
 		}
 	    }

@@ -365,31 +365,34 @@ void Graph::fastest(int source)
     t.start();
 		
     /*define and initialize data structures*/	
-    vector<pair<int, int>> startPoints;
+    /*vector<pair<int, int>> startPoints;
     for(int i=voutStart[source]; i<vinStart[source+1]; i++)
 	if(vertexList[i].t >= t_start && vertexList[i].t <= t_end)
 	  startPoints.push_back(make_pair(i, vertexList[i].t)); 
     sort(startPoints.begin( ), startPoints.end( ), [ ](const pair<int, int>& p1, const pair<int, int>& p2){
        return p1.second > p2.second;
-    });
+    });*/
     vector<bool> visited(vertexList.size(), false);
     queue<int> Q; 
 
     //newly added: what if we get to Vin[source] at some point?
-    for(int s_it = vinStart[source]; s_it < voutStart[source]; s_it++)
-	visited[s_it] = true;
+    /*for(int s_it = vinStart[source]; s_it < voutStart[source]; s_it++)
+	visited[s_it] = true;*/
 
-    for(auto it = startPoints.begin(); it != startPoints.end(); it++){
-	int ts = vertexList[it->first].t;
-        visited[it->first] = true; 
-        Q.push(it->first);
+    //for(auto it = startPoints.begin(); it != startPoints.end(); it++){
+    for(int it=vinStart[source+1]-1; it>=voutStart[source]; it--){
+        visited[it] = true;
+	int ts = vertexList[it].t; 
+	if(ts<t_start)
+	   break;
+        Q.push(it);
 	while(!Q.empty()){
 	    int node = Q.front(); 
 	    Q.pop();
 	    for(auto neighbor=vertexList[node].adjList.begin(); neighbor!=vertexList[node].adjList.end(); neighbor++){
 		int nID = neighbor->first; 
 		Node neiNode = vertexList[nID];
-		if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
+		if(!visited[nID] && neiNode.t <= t_end){
 		   visited[nID] = true; 
 		   Q.push(nID);
 		   if(neiNode.isVin == true && (neiNode.t-ts) < distances[neiNode.u])
