@@ -367,6 +367,8 @@ void Graph::fastest(int source)
 		   visited[nID] = true;
 		   st.push(nID);		      
 		   for(int it2=nID+1; it2 <voutStart[neiNode.u+1]; it2++){
+		       if(visited[it2])
+			  break;
 		       visited[it2] = true;
 		       st.push(it2);
 		   }
@@ -379,8 +381,8 @@ void Graph::fastest(int source)
     time_sum += t.GetRuntime();
 
     //for debugging only
-    for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl;
+    //for(int i=0; i<distances.size(); i++)
+	//cout << distances[i] << endl;
 }
 //-----------------
 
