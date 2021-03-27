@@ -363,26 +363,15 @@ void Graph::fastest(int source)
 {
     Timer t;
     t.start();
-		
-    /*define and initialize data structures*/	
-    /*vector<pair<int, int>> startPoints;
-    for(int i=voutStart[source]; i<vinStart[source+1]; i++)
-	if(vertexList[i].t >= t_start && vertexList[i].t <= t_end)
-	  startPoints.push_back(make_pair(i, vertexList[i].t)); 
-    sort(startPoints.begin( ), startPoints.end( ), [ ](const pair<int, int>& p1, const pair<int, int>& p2){
-       return p1.second > p2.second;
-    });*/
+
     vector<bool> visited(vertexList.size(), false);
     queue<int> Q; 
 
-    //newly added: what if we get to Vin[source] at some point?
-    /*for(int s_it = vinStart[source]; s_it < voutStart[source]; s_it++)
-	visited[s_it] = true;*/
-
-    //for(auto it = startPoints.begin(); it != startPoints.end(); it++){
     for(int it=vinStart[source+1]-1; it>=voutStart[source]; it--){
         visited[it] = true;
 	int ts = vertexList[it].t; 
+	if(ts > t_end)
+	   continue;
 	if(ts<t_start)
 	   break;
         Q.push(it);
@@ -406,8 +395,8 @@ void Graph::fastest(int source)
     time_sum += t.GetRuntime();
 
     /*for debugging only*/
-    //for(int i=0; i<distances.size(); i++)
-       	//cout << distances[i] << endl; 
+    for(int i=0; i<distances.size(); i++)
+       	cout << distances[i] << endl; 
 
 }
 //-----------------

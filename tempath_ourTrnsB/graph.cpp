@@ -342,13 +342,13 @@ void Graph::fastest(int source)
 
     vector<bool> visited(vertexList.size(), false);
     stack<int> st;
-    /*for(int it=voutStart[source]; it<voutStart[source+1]; it++){
-	visited[it] = true;
-    }*/
 
+    /*Our big assumption is that all edge weights are >= 0*/
     for(int it=voutStart[source+1]-1; it>=voutStart[source]; it--){
 	visited[it] = true;
 	int ts = vertexList[it].t; //start time
+	if(ts > t_end)
+	   continue;
 	if(ts < t_start)
 	  break;
 	st.push(it);
@@ -365,12 +365,14 @@ void Graph::fastest(int source)
                 }
 		if(!visited[nID]){
 		   visited[nID] = true;
-		   st.push(nID);		      
-		   for(int it2=nID+1; it2 <voutStart[neiNode.u+1]; it2++){
-		       if(visited[it2])
-			  break;
-		       visited[it2] = true;
-		       st.push(it2);
+		   if(vertexList[nID].t <= t_end){
+		   	st.push(nID);		      
+		        for(int it2=nID+1; it2 <voutStart[neiNode.u+1]; it2++){
+		            if(visited[it2] || vertexList[it2].t > t_end)
+			       break;
+		            visited[it2] = true;
+		            st.push(it2);
+		        }
 		   }
 		}
 	    }
@@ -381,8 +383,8 @@ void Graph::fastest(int source)
     time_sum += t.GetRuntime();
 
     //for debugging only
-    //for(int i=0; i<distances.size(); i++)
-	//cout << distances[i] << endl;
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;
 }
 //-----------------
 
