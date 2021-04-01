@@ -18,7 +18,7 @@
 
 using namespace std;
 
-const int infinity = 1e9;
+const int infinity = 2e9;
 
 struct Edge
 {

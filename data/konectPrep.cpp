@@ -9,6 +9,7 @@
 #include <cstddef>  /* std::size_t */
 #include <unordered_map>
 #include <algorithm> /* std::sort */
+#include <bits/stdc++.h>
 using namespace std; 
 
 struct Edge{
@@ -62,7 +63,7 @@ int main(int argc, char *argv[])
         // used for breaking words 
         stringstream ss(line); 
   
-        while (getline(ss, word, delim)) { 
+        while (getline(ss, word, delim)) {
             row.push_back(word); 
         } 
 
@@ -73,7 +74,6 @@ int main(int argc, char *argv[])
 	   //bypassing the self-cycles:
 	   if(e.u == e.v)
 	      continue;
-
 	   edgeList.push_back(e);
 	   if(undirected){
 	      Edge e2(stoi(row[1]), stoi(row[0]), stol(row[3]), 1);
@@ -87,9 +87,8 @@ int main(int argc, char *argv[])
     /*sort the edgeList in increasing order of t*/
     sort(edgeList.begin(), edgeList.end(), eSort);
 
-
-    for(long i=0; i<edgeList.size(); i++)
-	cout << edgeList[i].u << " " << edgeList[i].v << " " << edgeList[i].t << " " << edgeList[i].w << endl;
+    /*for(long i=0; i<edgeList.size(); i++)
+        cout << edgeList[i].u << " " << edgeList[i].v << " " << edgeList[i].t << " " << edgeList[i].w << endl;*/
 
     /*modify the time stamps. subtract all by the min time. If
     the min time is 0, replace the min time by the second min
@@ -110,9 +109,14 @@ int main(int argc, char *argv[])
     int node_index = 0; 
 
     long minT = edgeList[0].t; //min time
+    long maxT = 0;
+    int minNodeID = INT_MAX;
     for(long i=0; i<edgeList.size(); i++){ 
         //first modify the time
 	edgeList[i].t -= minT;
+	edgeList[i].t /= 2;
+	if(edgeList[i].t > maxT)
+	   maxT = edgeList[i].t;
 	 
 	//now, modify the node indices
 	//first deal with u
@@ -133,6 +137,8 @@ int main(int argc, char *argv[])
 	   edgeList[i].v = node_map[edgeList[i].v];
 	}
 	
+	if(node_index < minNodeID)
+	   minNodeID = node_index;	
     }
 
     /*now write the edgelist to an output file*/
@@ -146,5 +152,15 @@ int main(int argc, char *argv[])
 	outfile << edgeList[i].u << " " << edgeList[i].v << " " << edgeList[i].t << " " << edgeList[i].w << endl; 
 
     outfile.close();
+
+    if(maxT > INT_MAX)
+	cerr << "max time stamp : " << maxT << ", overflows integer capacity" << endl;
+    
+    if(maxT > 1e9)
+	cerr << "max time stamp: " << maxT << ", is greater than infinity" << endl;
+
+    if(minNodeID < 0)
+	cerr << "node indices overflow integer" << endl;
+
     return 0;  
 }   

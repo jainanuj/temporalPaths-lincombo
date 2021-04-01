@@ -12,7 +12,7 @@
 
 using namespace std;
 
-const int infinity = 1e9;
+const int infinity = 2e9;
 /*added by sanaz*/
 int numSources; 
 
@@ -609,7 +609,7 @@ void Graph::fastest(int source)
 
 	/*added by sanaz: for debugging only*/
 	//for(int i=0; i<f_time.size(); i++)
- 	  // cout << f_time[i] << endl;
+ 	  //cout << f_time[i] << endl;
 }
 
 
