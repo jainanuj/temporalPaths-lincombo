@@ -7,7 +7,7 @@ example.txt
 1 2 1 1
 0 2 2 1
 
-2. two parameters: argv[1]: option (choose from "earliest latest shortest fastest"); argv[2]: the input graph. 
+2. two parameters: argv[1]: option (choose from "earliest latest shortest fastest minhop (new option added by sanaz)"); argv[2]: the input graph. 
 
 Example:
 ./tempath earliest example.txt

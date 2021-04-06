@@ -467,6 +467,77 @@ void Graph::shortest(int source)
 
 }
 
+//added by sanaz//
+void Graph::run_minhop()
+{
+    time_sum=0;
+	
+    for(int i = 0 ;i < sources.size() ;i ++)
+    { 
+    	//modified by sanaz:
+	for(int j=0; j<V; j++)
+	  distances[j] = infinity; 
+	distances[sources[i]] = 0; 
+    	minhop(sources[i]);
+    }
+    
+    print_avg_time();
+
+}
+
+void Graph::minhop(int source)
+{
+    Timer t;
+    t.start();
+
+    /*defining and initializing data structures*/
+    typedef pair<int, int> iPair; 	
+    priority_queue< iPair, vector <iPair> , greater<iPair> > pq; //pairs of <distance, id> sorted in increasing order of distance
+    vector<int> local_dist(vertexList.size(), infinity); //distance vector for the nodes in the transformed graph
+    vector<bool> done(vertexList.size(), false); //keeping track of the nodes whose distance is established
+    
+    for(int it = voutStart[source]; it < vinStart[source+1]; it++)
+	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end){
+	   pq.push(make_pair(0, it));
+	   local_dist[it] = 0; 
+	} 
+
+    while(!pq.empty()){
+	int node = pq.top().second; 
+	pq.pop(); 
+	if(done[node]) 
+	   continue; 
+	done[node] = true; 
+	for(auto neigh=vertexList[node].adjList.begin(); neigh!=vertexList[node].adjList.end(); neigh++){
+	   int neiID = neigh->first;  
+	   if(!done[neiID] && vertexList[neiID].t >= t_start && vertexList[neiID].t <= t_end){
+		int linkW = (neigh->second == 0) ? 0 : 1;
+		int newDist = local_dist[node]+linkW;
+		if(newDist < local_dist[neiID]){
+		   local_dist[neiID] = newDist; 
+		   pq.push(make_pair(newDist, neiID));  
+		}
+	   }
+  	}
+    }
+
+    for(int i=0; i<vertexList.size(); i++)
+	if(vertexList[i].isVin && vertexList[i].t >= t_start && vertexList[i].t <= t_end){
+	   int u = vertexList[i].u; 
+	   distances[u] = min(distances[u], local_dist[i]);
+	}
+	
+    t.stop();
+    time_sum += t.GetRuntime();
+
+    /*for debugging only*/
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl; 
+
+}
+
+//--------------//
+
 void Graph::print_avg_time()
 {
 	cout<<"Average time: " << time_sum/numSources <<endl;

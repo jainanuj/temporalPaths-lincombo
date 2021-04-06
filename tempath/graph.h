@@ -66,6 +66,10 @@ public:
     void print_result_ld(const int source, const vector<int>& t_time, FILE * file); 
     void print_avg_time(const char* filePath1, const char* filePath2);
 
+    //added by sanaz:
+    void run_minhop();
+    void minhop(int source);
+
 public:
     vector< Edge > edge_list;
     vector< int > sources;
@@ -827,6 +831,115 @@ void Graph::shortest(int source)
 	    cout << f_time[i] << endl; 
 
 }
+
+//Modified from shortest_paths by sanaz//
+void Graph::run_minhop()
+{
+	time_sum=0;
+	
+	for(int i = 0 ;i < sources.size() ;i ++)
+    { 
+    	initial_ds_s();
+    	minhop(sources[i]);
+    }
+    
+    print_avg_time();
+
+}
+
+void Graph::minhop(int source)
+{
+	Timer t;
+	t.start();
+		
+	f_time[source]=0;	
+	
+	set < pair< int, int > >::iterator it_tp, it_tp_low, it_tp_up, it_tp_1, it_tp_2;
+	
+	for(int i=0; i<dynamic_E; i ++) {
+		if(edge_list[i].t<t_end){
+			if (edge_list[i].t+edge_list[i].w<=t_end && edge_list[i].t >=t_start){
+				if (edge_list[i].u == source){
+					st_timepair[edge_list[i].u].insert(make_pair(edge_list[i].t, 0));
+				}
+				
+				if(!st_timepair[edge_list[i].u].empty()){ // the path from x to u is not empty
+					it_tp=st_timepair[edge_list[i].u].upper_bound(make_pair(edge_list[i].t, infinity));
+				
+					if(it_tp != st_timepair[edge_list[i].u].begin()){ //exists some pair arrived at or before t
+						it_tp --;
+						
+						int a_t=edge_list[i].t+edge_list[i].w;
+						int s_d=it_tp->second+1;
+						
+						if(s_d < f_time[edge_list[i].v])
+							f_time[edge_list[i].v] = s_d;
+					
+						if(!st_timepair[edge_list[i].v].empty()){ // the path from x to v is not empty
+							it_tp_1=st_timepair[edge_list[i].v].upper_bound(make_pair(a_t, s_d));
+					
+							if(it_tp_1 == st_timepair[edge_list[i].v].begin() ){ // a_t is the smallest arrival time
+								it_tp_low=it_tp_1;
+								for(it_tp_up=it_tp_low; it_tp_up != st_timepair[edge_list[i].v].end(); it_tp_up++){
+									if(it_tp_up->second < s_d){
+										break;
+									}
+								}
+								
+								st_timepair[edge_list[i].v].erase(it_tp_low,it_tp_up); //remove useless pairs
+								st_timepair[edge_list[i].v].insert(make_pair(a_t, s_d));
+								
+							}
+							else if (it_tp_1 == st_timepair[edge_list[i].v].end()) { //a_t is the largest arrival time
+								it_tp_2 = it_tp_1;
+								it_tp_2 --;
+					
+								if (it_tp_2->first < a_t && it_tp_2->second > s_d){
+									st_timepair[edge_list[i].v].insert(make_pair(a_t, s_d)); 
+								}
+							}
+							else {
+								it_tp_2=it_tp_1;
+								it_tp_2--;
+								
+								if(it_tp_2->first < a_t && it_tp_2->second > s_d) {
+									it_tp_low=it_tp_1;
+									for(it_tp_up=it_tp_low; it_tp_up != st_timepair[edge_list[i].v].end(); it_tp_up++){
+										if(it_tp_up->second < s_d){
+											break;
+										}
+									}
+									
+									st_timepair[edge_list[i].v].erase(it_tp_low, it_tp_up);
+									st_timepair[edge_list[i].v].insert(make_pair(a_t, s_d));
+								}
+							}
+						}
+						else {
+							st_timepair[edge_list[i].v].insert(make_pair(a_t, s_d));
+						}
+						
+					}	
+				}
+				
+				
+			}	
+		}
+		else {
+			break;
+		}
+	}
+	
+	t.stop();
+	time_sum += t.GetRuntime();
+
+	/*added by sanaz: for debugging only*/
+	for(int i=0; i<f_time.size(); i++)
+	    cout << f_time[i] << endl; 
+
+}
+
+//-------------------------------------//
 
 void Graph::print_avg_time()
 {

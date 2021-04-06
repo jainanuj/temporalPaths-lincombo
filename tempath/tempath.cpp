@@ -46,6 +46,10 @@ int main(int argc, char* argv[]){
     {
 		g.run_fastest();
     }
+    else if(!strcmp(option,"minhop")) //added by sanaz
+    {
+	g.run_minhop();
+    }
 	
     //cout<<"hello world!!!" <<endl; //removed by sanaz, I see no reason for this statement
 	

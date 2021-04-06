@@ -90,6 +90,10 @@ public:
     void print_result_ld(const int source, const vector<int>& t_time, FILE * file); 
     void print_avg_time(const char* filePath1, const char* filePath2);*/
 
+    //added by sanaz:
+    void run_minhop();
+    void minhop(int source);
+
 public:
     vector< Edge > edge_list;
     vector< int > sources;

@@ -460,6 +460,89 @@ void Graph::fastest(int source)
 
 }*/
 
+//added by sanaz//
+void Graph::run_minhop()
+{
+    time_sum=0;
+	
+    for(int i = 0 ;i < sources.size() ;i ++)
+    { 
+    	//modified by sanaz:
+	for(int j=0; j<V; j++)
+	  distances[j] = infinity; 
+	distances[sources[i]] = 0; 
+    	minhop(sources[i]);
+    }
+    
+    print_avg_time();
+
+}
+
+void Graph::minhop(int source)
+{
+    Timer t;
+    t.start();
+
+    vector<bool> newLive(V, false);
+    vector<int> eout(V, infinity);
+    vector<bool> visited(vertexList.size(), false);
+    Queue<int> Q;
+
+    live[source] = true;
+    Q.push(source);
+    eout[source] = t_start;
+    int hopCount = 1;
+    int count = 1; 
+
+    while(Q.size() > 0){
+	int qSize = Q.size();
+	for(int i=0; i<qSize; i++){
+    	    int u = Q.front();
+	    Q.pop();
+	    //try all feasible touts from u not tried before
+	    for(int uu = voutStart[u]; uu < voutStart[u+1] && vertexList[uu].t >= eout[u] && vertexList[uu].t <= t_end && !visited[uu]; uu++){
+		visited[uu] = true;
+		for(auto it=vertexList[uu].adjList.begin(); it != vertexList[uu].adjList.end(); it++){
+		    int neigh = it->first;
+		    int tOut = vertexList[neigh].t;
+		    int vv = vertexList[it->first].u;
+		    if(tOut < eout[vv]){
+			if(eout[vv] == infinity){ //vv is newly reached
+			   distances[vv] = hopCount;
+			   if(++count == V){ //all vertices reached
+				t.stop();
+				time_sum += t.GetRuntime();
+				//for debugging only
+				for(int i=0; i<distances.size(); i++)
+				   cout << distances[i] << endl;
+				return;
+			   }
+			}//done
+			eout[vv] = tOut;
+			if(!newLive[vv]){
+			   newLive[vv] = true;
+			   Q.push(vv);
+			}
+		    }
+		}
+	    }
+	}
+        vector<bool> tmpLive(V, false);
+	swap(tmpLive, newLive);
+	hopCount++;
+    }        
+
+    t.stop();
+    time_sum += t.GetRuntime();
+
+    //for debugging only
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl; 
+
+}
+
+//--------------//
+
 void Graph::print_avg_time()
 {
 	cout<<"Average time: " << time_sum/numSources <<endl;
