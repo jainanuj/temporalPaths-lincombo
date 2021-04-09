@@ -86,23 +86,8 @@ void Graph::transform(){
    for(int i=0; i<vertexList.size(); i++)
 	cout << "u: " << vertexList[i].u << ", t: " << vertexList[i].t << endl;*/
 
-   //edge creation step 1: making the Vout node chain
-   //we no more need chain edges in the new version
-   int edge_cnt = 0; 
-   /*set<int>::iterator it2; 
-   for(int i=0; i<V; i++){
-      it = it2 = Tout[i].begin(); 
-      if(it2!=Tout[i].end()) it2++;
-      while(it2 != Tout[i].end()){  
-	   vertexList[outMap[make_pair(i, *it)]].adjList.push_back(make_pair(outMap[make_pair(i, *it2)], 0));
-	   it++;
-	   it2++;
-	   edge_cnt++;
-      }
-   }*/
-
-
    //edge creation step 1: adding the weighted links
+   int edge_cnt = 0;
    for(Edge e : edge_list){
 	int u_index = outMap[make_pair(e.u, e.t)];
         //we are looking for the smallest t greater that e.t+e.w
@@ -129,7 +114,7 @@ void Graph::transform(){
    }
 
    //for debugging:
-   //print_adjList();
+   print_adjList();
 }
 
 void Graph::print_adjList(){  
@@ -486,9 +471,8 @@ void Graph::minhop(int source)
     vector<bool> newLive(V, false);
     vector<int> eout(V, infinity);
     vector<bool> visited(vertexList.size(), false);
-    Queue<int> Q;
+    queue<int> Q;
 
-    live[source] = true;
     Q.push(source);
     eout[source] = t_start;
     int hopCount = 1;
@@ -500,13 +484,17 @@ void Graph::minhop(int source)
     	    int u = Q.front();
 	    Q.pop();
 	    //try all feasible touts from u not tried before
-	    for(int uu = voutStart[u]; uu < voutStart[u+1] && vertexList[uu].t >= eout[u] && vertexList[uu].t <= t_end && !visited[uu]; uu++){
+	    for(int uu = voutStart[u]; uu < voutStart[u+1] && vertexList[uu].t <= t_end && !visited[uu]; uu++){
+		if(vertexList[uu].t < eout[u])
+		   continue;
 		visited[uu] = true;
 		for(auto it=vertexList[uu].adjList.begin(); it != vertexList[uu].adjList.end(); it++){
-		    int neigh = it->first;
+		    int neigh = it->first; //new index
 		    int tOut = vertexList[neigh].t;
-		    int vv = vertexList[it->first].u;
-		    if(tOut < eout[vv]){
+		    int vv = vertexList[neigh].u; //old index
+		    /*a big assumption: hop count is always < infinity*/
+		    //the first condition added because maybe the target node has no out-time other than infinity used for the dumb vout node
+		    if(distances[vv] == infinity || tOut < eout[vv]){ 
 			if(eout[vv] == infinity){ //vv is newly reached
 			   distances[vv] = hopCount;
 			   if(++count == V){ //all vertices reached
