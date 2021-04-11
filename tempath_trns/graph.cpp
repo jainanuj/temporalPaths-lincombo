@@ -482,13 +482,20 @@ void Graph::run_minhop()
     }
     
     print_avg_time();
-
 }
+
 
 void Graph::minhop(int source)
 {
     Timer t;
     t.start();
+
+    //used for debugging only:
+    vector<Node> parents;
+    parents.resize(V);
+    vector<Node> parentsTmp;
+    parentsTmp.resize(vertexList.size());	
+    //--------to here-------//
 
     /*defining and initializing data structures*/
     typedef pair<int, int> iPair; 	
@@ -496,25 +503,42 @@ void Graph::minhop(int source)
     vector<int> local_dist(vertexList.size(), infinity); //distance vector for the nodes in the transformed graph
     vector<bool> done(vertexList.size(), false); //keeping track of the nodes whose distance is established
     
-    for(int it = voutStart[source]; it < vinStart[source+1]; it++)
+    for(int it = voutStart[source]; it < vinStart[source+1]; it++){
 	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end){
 	   pq.push(make_pair(0, it));
 	   local_dist[it] = 0; 
 	} 
-
+    }
     while(!pq.empty()){
-	int node = pq.top().second; 
+	int node = pq.top().second;
+	//if(vertexList[node].u == 0)
+	  // cout << "visited node 0 just now" << endl; 
 	pq.pop(); 
 	if(done[node]) 
 	   continue; 
 	done[node] = true; 
 	for(auto neigh=vertexList[node].adjList.begin(); neigh!=vertexList[node].adjList.end(); neigh++){
 	   int neiID = neigh->first;  
+           if(vertexList[neiID].u == 3713)
+		cout << "BBB parent.u: " << vertexList[node].u << endl;
 	   if(!done[neiID] && vertexList[neiID].t >= t_start && vertexList[neiID].t <= t_end){
 		int linkW = (neigh->second == 0) ? 0 : 1;
 		int newDist = local_dist[node]+linkW;
+		if(vertexList[neiID].u == 3713)
+		   cout << "BBB newDist: " << newDist << ", parent distance: " << local_dist[node] << endl;
 		if(newDist < local_dist[neiID]){
-		   local_dist[neiID] = newDist; 
+		   local_dist[neiID] = newDist;
+		   if(vertexList[neiID].u == 3713)
+                      cout << "BBB distance updated to " << local_dist[neiID] << endl;
+		   if(linkW == 1){
+		       if(vertexList[neiID].u == 3713)
+ 		          cout << "BBB parent updated to " << vertexList[node].u << endl;
+		       parentsTmp[neiID] = vertexList[node];}
+		   else{
+		       parentsTmp[neiID] = parentsTmp[node];
+			if(vertexList[neiID].u == 3713)
+			   cout << "BBB parent updated to " << parentsTmp[neiID].u << endl;  
+		   }
 		   pq.push(make_pair(newDist, neiID));  
 		}
 	   }
@@ -525,15 +549,20 @@ void Graph::minhop(int source)
 	if(vertexList[i].isVin && vertexList[i].t >= t_start && vertexList[i].t <= t_end){
 	   int u = vertexList[i].u; 
 	   distances[u] = min(distances[u], local_dist[i]);
+	   //for debugging only:
+	   if(local_dist[i] <= distances[u])
+		parents[u] = parentsTmp[i];
 	}
 	
     t.stop();
     time_sum += t.GetRuntime();
 
     /*for debugging only*/
-    for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl; 
+    //for(int i=0; i<distances.size(); i++)
+	//cout << distances[i] << endl; 
 
+    for(int i=0; i<V; i++)
+	cout << "node: " << i << ", parent.u: " << parents[i].u << ", parent.t: " << parents[i].t << ", distance: " << distances[i] << endl;
 }
 
 //--------------//

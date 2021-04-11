@@ -102,6 +102,30 @@ void Graph::transform(){
 	}
    }
 
+
+   //for debugging only:
+   /*for(int i = voutStart[6337]; i< voutStart[6338]; i++)
+   for(auto ii=vertexList[i].adjList.begin(); ii!=vertexList[i].adjList.end(); ii++)
+	if(vertexList[ii->first].u == 3713)
+		cerr << "there is a link from node 6337 to node 3713" << endl;
+   cerr << "there is noooo link from node 6337 to node 3713" << endl;
+   //for debugging only:
+   for(int i=voutStart[5751]; i<voutStart[5752]; i++)
+   for(auto ii=vertexList[i].adjList.begin(); ii!=vertexList[i].adjList.end(); ii++)
+        if(vertexList[ii->first].u == 5062)
+                cerr << "there is a link from node 5751 to node 5062" << endl;
+   cerr << "there is noooo link from node 5751 to node 5062" << endl;*/
+
+   //DFS, for debugging only:
+   int source = 6347;
+   int dest = 5530;
+   for(int i=voutStart[source]; i<voutStart[source+1]; i++){
+	vector<bool> visited(vertexList.size(), false);
+	vector<int> stack;
+	stack.insert(stack.begin(), i);
+	DFS(i, dest, visited, stack);
+   }
+
    cerr << "number of edges after transform: " << edge_cnt << endl;
    cerr << "number of nodes after transform: " << index << endl;
 
@@ -114,7 +138,28 @@ void Graph::transform(){
    }
 
    //for debugging:
-   print_adjList();
+   //print_adjList();
+}
+
+void Graph::DFS(int sourceNewID, int destOldID, vector<bool> visited, vector<int> stack){
+     //cerr << "inside the DFS function" << endl;
+     if(vertexList[sourceNewID].u == destOldID){
+	int i=stack.size()-1; 
+	for(; i>0; i--)
+	    cerr << vertexList[stack[i]].u << " -> ";
+	cerr << vertexList[stack[i]].u << endl;
+	return;
+     }
+     for(auto it=vertexList[sourceNewID].adjList.begin(); it != vertexList[sourceNewID].adjList.end(); it++){
+	int neigh = it->first;
+	if(!visited[neigh]){
+	   visited[neigh] = true;
+	   stack.insert(stack.begin(), neigh);
+	   DFS(neigh, destOldID, visited, stack);
+	   stack.erase(stack.begin());
+	   visited[neigh] = false;
+	}
+     }
 }
 
 void Graph::print_adjList(){  
@@ -468,6 +513,11 @@ void Graph::minhop(int source)
     Timer t;
     t.start();
 
+    //for debugging only://
+    vector<Node> parents;
+    parents.resize(V);
+    //up to here---------//
+
     vector<bool> newLive(V, false);
     vector<int> eout(V, infinity);
     vector<bool> visited(vertexList.size(), false);
@@ -497,12 +547,15 @@ void Graph::minhop(int source)
 		    if(distances[vv] == infinity || tOut < eout[vv]){ 
 			if(eout[vv] == infinity){ //vv is newly reached
 			   distances[vv] = hopCount;
+			   parents[vv] = vertexList[uu]; //for debugging only
 			   if(++count == V){ //all vertices reached
 				t.stop();
 				time_sum += t.GetRuntime();
 				//for debugging only
-				for(int i=0; i<distances.size(); i++)
-				   cout << distances[i] << endl;
+				//for(int i=0; i<distances.size(); i++)
+				     //cout << "target_node: " << i << " - " << distances[i] << endl;
+				for(int i=0; i<V; i++)
+        				cout << "node: " << i << ", parent.u: " << parents[i].u << ", parent.t: " << parents[i].t << endl;
 				return;
 			   }
 			}//done
@@ -524,9 +577,11 @@ void Graph::minhop(int source)
     time_sum += t.GetRuntime();
 
     //for debugging only
-    for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl; 
+    //for(int i=0; i<distances.size(); i++)
+       // cout << "target_node: " << i  << " - " << distances[i] << endl;
 
+    for(int i=0; i<V; i++)
+        cout << "node: " << i << ", parent.u: " << parents[i].u << ", parent.t: " << parents[i].t << endl;
 }
 
 //--------------//
