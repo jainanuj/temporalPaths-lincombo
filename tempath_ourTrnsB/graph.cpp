@@ -6,11 +6,6 @@ Graph::Graph(const char* filePath)
 	int x;
    	x=fscanf(file, "%d %d",&V, &dynamic_E);
 
-	//arr_time.resize(V);
-	//f_time.resize(V);
-	//ft_timepair.resize(V);
-	//st_timepair.resize(V);
-    
     //added by sanaz:
     distances.resize(V); 
     //---------------
@@ -49,10 +44,6 @@ void Graph::dominatedRemoval(){
         }
     }
 
-    /*for debugging*/
-    /*cout << "the edge_list after removing the dominant edges:" << endl;
- *     for(int i=0; i<edge_list.size(); i++)
- *             cout << "u: " << edge_list[i].u << ", v: " << edge_list[i].v << ", t: " << edge_list[i].t << ", w: " << edge_list[i].w << endl;*/
     return;
 }
 
@@ -60,8 +51,12 @@ void Graph::dominatedRemoval(){
 void Graph::transform(){
    vector<set<int>> Tout; //the set of distinct out times for each node
    Tout.resize(V);
+   vector<int> maxIN(V, -1); //max in-time for each node
+   vector<int> maxOUT(V, -1); //max out-time for each node
    for(Edge e : edge_list){
 	Tout[e.u].insert(e.t);
+        maxOUT[e.u] = max(maxOUT[e.u], e.t);
+	maxIN[e.v] = max(maxIN[e.v], e.t+e.w);
    }
 
    set <int>::iterator it; 
@@ -71,7 +66,9 @@ void Graph::transform(){
    int t; 
    for(int i=0; i<V; i++){
 	voutStart.push_back(index);
-	Tout[i].insert(infinity); //dumb node, so that the nodes with an empty Tout but non-empty Tin are accounted for
+	//dummy node, so that the nodes with an empty Tout but non-empty Tin or nodes whose lost input cannot get out are accounted for
+	if(Tout[i].empty() || maxOUT[i] < maxIN[i])
+	   Tout[i].insert(maxIN[i]);
 	//elements in Tin[i] are sorted in increasing order of t
 	for(it=Tout[i].begin(); it!=Tout[i].end(); it++){
 	  t = *it;
@@ -102,30 +99,6 @@ void Graph::transform(){
 	}
    }
 
-
-   //for debugging only:
-   /*for(int i = voutStart[6337]; i< voutStart[6338]; i++)
-   for(auto ii=vertexList[i].adjList.begin(); ii!=vertexList[i].adjList.end(); ii++)
-	if(vertexList[ii->first].u == 3713)
-		cerr << "there is a link from node 6337 to node 3713" << endl;
-   cerr << "there is noooo link from node 6337 to node 3713" << endl;
-   //for debugging only:
-   for(int i=voutStart[5751]; i<voutStart[5752]; i++)
-   for(auto ii=vertexList[i].adjList.begin(); ii!=vertexList[i].adjList.end(); ii++)
-        if(vertexList[ii->first].u == 5062)
-                cerr << "there is a link from node 5751 to node 5062" << endl;
-   cerr << "there is noooo link from node 5751 to node 5062" << endl;*/
-
-   //DFS, for debugging only:
-   int source = 6347;
-   int dest = 5530;
-   for(int i=voutStart[source]; i<voutStart[source+1]; i++){
-	vector<bool> visited(vertexList.size(), false);
-	vector<int> stack;
-	stack.insert(stack.begin(), i);
-	DFS(i, dest, visited, stack);
-   }
-
    cerr << "number of edges after transform: " << edge_cnt << endl;
    cerr << "number of nodes after transform: " << index << endl;
 
@@ -139,27 +112,6 @@ void Graph::transform(){
 
    //for debugging:
    //print_adjList();
-}
-
-void Graph::DFS(int sourceNewID, int destOldID, vector<bool> visited, vector<int> stack){
-     //cerr << "inside the DFS function" << endl;
-     if(vertexList[sourceNewID].u == destOldID){
-	int i=stack.size()-1; 
-	for(; i>0; i--)
-	    cerr << vertexList[stack[i]].u << " -> ";
-	cerr << vertexList[stack[i]].u << endl;
-	return;
-     }
-     for(auto it=vertexList[sourceNewID].adjList.begin(); it != vertexList[sourceNewID].adjList.end(); it++){
-	int neigh = it->first;
-	if(!visited[neigh]){
-	   visited[neigh] = true;
-	   stack.insert(stack.begin(), neigh);
-	   DFS(neigh, destOldID, visited, stack);
-	   stack.erase(stack.begin());
-	   visited[neigh] = false;
-	}
-     }
 }
 
 void Graph::print_adjList(){  
@@ -412,8 +364,8 @@ void Graph::fastest(int source)
     time_sum += t.GetRuntime();
 
     //for debugging only
-    //for(int i=0; i<distances.size(); i++)
-	//cout << distances[i] << endl;
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;
 }
 //-----------------
 
@@ -513,10 +465,10 @@ void Graph::minhop(int source)
     Timer t;
     t.start();
 
-    //for debugging only://
-    vector<Node> parents;
-    parents.resize(V);
-    //up to here---------//
+    //for debugging only:
+    /*vector<int> parents(V, -1);
+    int step = 0;*/ 
+    // ----to here-------
 
     vector<bool> newLive(V, false);
     vector<int> eout(V, infinity);
@@ -533,8 +485,10 @@ void Graph::minhop(int source)
 	for(int i=0; i<qSize; i++){
     	    int u = Q.front();
 	    Q.pop();
+	    cout << "hopCount: " << hopCount << " extracted node: " << u << endl;
 	    //try all feasible touts from u not tried before
 	    for(int uu = voutStart[u]; uu < voutStart[u+1] && vertexList[uu].t <= t_end && !visited[uu]; uu++){
+		cout << "hopCount: " << hopCount << " chain neighbor.u: " << vertexList[uu].u << " chain neighbor.t: " << vertexList[uu].t << " prev eout: " << eout[u] << endl; 
 		if(vertexList[uu].t < eout[u])
 		   continue;
 		visited[uu] = true;
@@ -542,25 +496,31 @@ void Graph::minhop(int source)
 		    int neigh = it->first; //new index
 		    int tOut = vertexList[neigh].t;
 		    int vv = vertexList[neigh].u; //old index
-		    /*a big assumption: hop count is always < infinity*/
-		    //the first condition added because maybe the target node has no out-time other than infinity used for the dumb vout node
-		    if(distances[vv] == infinity || tOut < eout[vv]){ 
+		    cout << "hopCount: " << hopCount << " neighbor.u: " << vv << " neighbor.t: " << vertexList[neigh].t << " reached from node " << vertexList[uu].u << ", t: " << vertexList[uu].t << endl;
+		    if(tOut < eout[vv]){ 
 			if(eout[vv] == infinity){ //vv is newly reached
+			   //step ++;
+			   cout << "node.u: " << vertexList[neigh].u << " node.t: " << vertexList[neigh].t << " dist: " << hopCount << " parent.u: " << vertexList[uu].u << " parent.t: " << vertexList[uu].t << endl;
 			   distances[vv] = hopCount;
-			   parents[vv] = vertexList[uu]; //for debugging only
+			   cout << "vv: " << vv << ", node.u: " << vertexList[neigh].u << endl; 
+			   if(vv == 6331){
+				cerr << "the distance to node 6331 has been set to " << hopCount << endl;
+				return;
+			    }
+			   //parents[vv] = vertexList[uu].u;
 			   if(++count == V){ //all vertices reached
 				t.stop();
 				time_sum += t.GetRuntime();
 				//for debugging only
-				//for(int i=0; i<distances.size(); i++)
-				     //cout << "target_node: " << i << " - " << distances[i] << endl;
-				for(int i=0; i<V; i++)
-        				cout << "node: " << i << ", parent.u: " << parents[i].u << ", parent.t: " << parents[i].t << endl;
+				/*for(int i=0; i<distances.size(); i++)
+				    cout << distances[i] << endl;*/
 				return;
 			   }
 			}//done
 			eout[vv] = tOut;
+			cout << "hopCount: " << hopCount << " ecout[vv] updated to " << tOut << " for vv = " << vv << endl;
 			if(!newLive[vv]){
+			   cout << "hopCount: " << hopCount << " vv added to newLive, eout[vv]: " << eout[vv] << ", vv: " << vv << " vv.time: " << vertexList[neigh].t << endl; 
 			   newLive[vv] = true;
 			   Q.push(vv);
 			}
@@ -571,17 +531,17 @@ void Graph::minhop(int source)
         vector<bool> tmpLive(V, false);
 	swap(tmpLive, newLive);
 	hopCount++;
+	//for debugging only:
+	if(hopCount >= 5)
+	   return;
     }        
 
     t.stop();
     time_sum += t.GetRuntime();
 
     //for debugging only
-    //for(int i=0; i<distances.size(); i++)
-       // cout << "target_node: " << i  << " - " << distances[i] << endl;
-
-    for(int i=0; i<V; i++)
-        cout << "node: " << i << ", parent.u: " << parents[i].u << ", parent.t: " << parents[i].t << endl;
+    /*for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;*/
 }
 
 //--------------//

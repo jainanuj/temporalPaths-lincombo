@@ -92,7 +92,6 @@ public:
     //added by sanaz:
     void run_minhop();
     void minhop(int source);
-    void DFS(int sourceNewID, int destOldID, vector<bool> visited, vector<int> stack);
 
 public:
     vector< Edge > edge_list;

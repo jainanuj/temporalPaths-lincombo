@@ -935,7 +935,7 @@ void Graph::minhop(int source)
 
 	/*added by sanaz: for debugging only*/
 	for(int i=0; i<f_time.size(); i++)
-	    cout << "target_node: " << i << " - " << f_time[i] << endl; 
+	    cout << f_time[i] << endl; 
 
 }
 
