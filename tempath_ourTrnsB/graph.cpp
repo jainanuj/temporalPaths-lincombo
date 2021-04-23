@@ -465,18 +465,18 @@ void Graph::minhop(int source)
     Timer t;
     t.start();
 
-    //for debugging only:
-    /*vector<int> parents(V, -1);
-    int step = 0;*/ 
-    // ----to here-------
-
+    vector<bool> live(V, false);
     vector<bool> newLive(V, false);
     vector<int> eout(V, infinity);
+    vector<int> newEout(V, infinity); //added to resolve the bug
+    vector<int> uniqueV; //used in companion with newEout
     vector<bool> visited(vertexList.size(), false);
     queue<int> Q;
 
     Q.push(source);
     eout[source] = t_start;
+    newEout[source] = t_start; 
+    live[source] = true;
     int hopCount = 1;
     int count = 1; 
 
@@ -484,11 +484,10 @@ void Graph::minhop(int source)
 	int qSize = Q.size();
 	for(int i=0; i<qSize; i++){
     	    int u = Q.front();
+	    live[u] = false;
 	    Q.pop();
-	    cout << "hopCount: " << hopCount << " extracted node: " << u << endl;
 	    //try all feasible touts from u not tried before
-	    for(int uu = voutStart[u]; uu < voutStart[u+1] && vertexList[uu].t <= t_end && !visited[uu]; uu++){
-		cout << "hopCount: " << hopCount << " chain neighbor.u: " << vertexList[uu].u << " chain neighbor.t: " << vertexList[uu].t << " prev eout: " << eout[u] << endl; 
+	    for(int uu = voutStart[u]; uu < voutStart[u+1] && vertexList[uu].t <= t_end && !visited[uu]; uu++){ 
 		if(vertexList[uu].t < eout[u])
 		   continue;
 		visited[uu] = true;
@@ -496,52 +495,44 @@ void Graph::minhop(int source)
 		    int neigh = it->first; //new index
 		    int tOut = vertexList[neigh].t;
 		    int vv = vertexList[neigh].u; //old index
-		    cout << "hopCount: " << hopCount << " neighbor.u: " << vv << " neighbor.t: " << vertexList[neigh].t << " reached from node " << vertexList[uu].u << ", t: " << vertexList[uu].t << endl;
-		    if(tOut < eout[vv]){ 
-			if(eout[vv] == infinity){ //vv is newly reached
-			   //step ++;
-			   cout << "node.u: " << vertexList[neigh].u << " node.t: " << vertexList[neigh].t << " dist: " << hopCount << " parent.u: " << vertexList[uu].u << " parent.t: " << vertexList[uu].t << endl;
+		    if(tOut < newEout[vv]){ 
+			if(newEout[vv] == infinity){ //vv is newly reached
 			   distances[vv] = hopCount;
-			   cout << "vv: " << vv << ", node.u: " << vertexList[neigh].u << endl; 
-			   if(vv == 6331){
-				cerr << "the distance to node 6331 has been set to " << hopCount << endl;
-				return;
-			    }
-			   //parents[vv] = vertexList[uu].u;
 			   if(++count == V){ //all vertices reached
 				t.stop();
 				time_sum += t.GetRuntime();
 				//for debugging only
-				/*for(int i=0; i<distances.size(); i++)
-				    cout << distances[i] << endl;*/
+				for(int i=0; i<distances.size(); i++)
+				    cout << distances[i] << endl;
 				return;
 			   }
 			}//done
-			eout[vv] = tOut;
-			cout << "hopCount: " << hopCount << " ecout[vv] updated to " << tOut << " for vv = " << vv << endl;
-			if(!newLive[vv]){
-			   cout << "hopCount: " << hopCount << " vv added to newLive, eout[vv]: " << eout[vv] << ", vv: " << vv << " vv.time: " << vertexList[neigh].t << endl; 
+			newEout[vv] = tOut;
+			if(!newLive[vv]){ 
 			   newLive[vv] = true;
+			   uniqueV.push_back(vv); //added to resolve the bug
 			   Q.push(vv);
 			}
 		    }
 		}
 	    }
 	}
-        vector<bool> tmpLive(V, false);
-	swap(tmpLive, newLive);
+        //vector<bool> tmpLive(V, false);
+	for(int ii=0; ii<uniqueV.size(); ii++){
+	    int index = uniqueV[ii];
+	    eout[index] = newEout[index];
+	}
+	uniqueV.clear();
+	swap(live, newLive);
 	hopCount++;
-	//for debugging only:
-	if(hopCount >= 5)
-	   return;
     }        
 
     t.stop();
     time_sum += t.GetRuntime();
 
     //for debugging only
-    /*for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl;*/
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;
 }
 
 //--------------//
