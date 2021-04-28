@@ -467,15 +467,15 @@ void Graph::minhop(int source)
 
     vector<bool> live(V, false);
     vector<bool> newLive(V, false);
-    vector<int> eout(V, infinity);
-    vector<int> newEout(V, infinity); //added to resolve the bug
+    vector<int> eout(V, -1); //use indices instead of actual times - optimize loop for uu
+    vector<int> newEout(V, -1); //added to resolve the bug
     vector<int> uniqueV; //used in companion with newEout
     vector<bool> visited(vertexList.size(), false);
     queue<int> Q;
 
     Q.push(source);
-    eout[source] = t_start;
-    newEout[source] = t_start; 
+    eout[source] = voutStart[source];//t_start;
+    newEout[source] = voutStart[source];//t_start; 
     live[source] = true;
     int hopCount = 1;
     int count = 1; 
@@ -487,16 +487,17 @@ void Graph::minhop(int source)
 	    live[u] = false;
 	    Q.pop();
 	    //try all feasible touts from u not tried before
-	    for(int uu = voutStart[u]; uu < voutStart[u+1] && vertexList[uu].t <= t_end && !visited[uu]; uu++){ 
-		if(vertexList[uu].t < eout[u])
-		   continue;
+	    //for(int uu = voutStart[u]; uu < voutStart[u+1] && vertexList[uu].t <= t_end && !visited[uu]; uu++){ 
+	    for(int uu = eout[u]; uu < voutStart[u+1] && vertexList[uu].t <= t_end && !visited[uu]; uu++){ 
+		/*if(vertexList[uu].t < eout[u])
+		   continue;*/
 		visited[uu] = true;
 		for(auto it=vertexList[uu].adjList.begin(); it != vertexList[uu].adjList.end(); it++){
 		    int neigh = it->first; //new index
 		    int tOut = vertexList[neigh].t;
 		    int vv = vertexList[neigh].u; //old index
-		    if(tOut < newEout[vv]){ 
-			if(newEout[vv] == infinity){ //vv is newly reached
+		    if(newEout[vv] == -1 || tOut < vertexList[newEout[vv]].t){ 
+			if(newEout[vv] == -1){ //vv is newly reached
 			   distances[vv] = hopCount;
 			   if(++count == V){ //all vertices reached
 				t.stop();
@@ -507,7 +508,8 @@ void Graph::minhop(int source)
 				return;
 			   }
 			}//done
-			newEout[vv] = tOut;
+			//newEout[vv] = tOut;
+			newEout[vv] = neigh;
 			if(!newLive[vv]){ 
 			   newLive[vv] = true;
 			   uniqueV.push_back(vv); //added to resolve the bug
