@@ -471,9 +471,11 @@ void Graph::minhop(int source)
     vector<int> newEout(V, -1); //added to resolve the bug
     vector<int> uniqueV; //used in companion with newEout
     vector<bool> visited(vertexList.size(), false);
-    queue<int> Q;
+    //queue<int> Q;
+    vector<int> Q; //used vector instead of queue for optimization
 
-    Q.push(source);
+    //Q.push(source);
+    Q.push_back(source);
     eout[source] = voutStart[source];//t_start;
     newEout[source] = voutStart[source];//t_start; 
     live[source] = true;
@@ -481,11 +483,13 @@ void Graph::minhop(int source)
     int count = 1; 
 
     while(Q.size() > 0){
-	int qSize = Q.size();
-	for(int i=0; i<qSize; i++){
-    	    int u = Q.front();
+	//int qSize = Q.size();
+	//for(int i=0; i<qSize; i++){
+	for(int i=0; i<Q.size(); i++){
+    	    //int u = Q.front();
+	    int u = Q[i];
 	    live[u] = false;
-	    Q.pop();
+	    //Q.pop();
 	    //try all feasible touts from u not tried before
 	    //for(int uu = voutStart[u]; uu < voutStart[u+1] && vertexList[uu].t <= t_end && !visited[uu]; uu++){ 
 	    for(int uu = eout[u]; uu < voutStart[u+1] && vertexList[uu].t <= t_end && !visited[uu]; uu++){ 
@@ -515,16 +519,18 @@ void Graph::minhop(int source)
 			if(!newLive[vv]){ 
 			   newLive[vv] = true;
 			   uniqueV.push_back(vv); //added to resolve the bug
-			   Q.push(vv);
+			   //Q.push(vv);
 			}
 		    }
 		}
 	    }
 	}
         //vector<bool> tmpLive(V, false);
+	Q.clear();
 	for(int ii=0; ii<uniqueV.size(); ii++){
 	    int index = uniqueV[ii];
 	    eout[index] = newEout[index];
+	    Q.push_back(index);
 	}
 	uniqueV.clear();
 	swap(live, newLive);
