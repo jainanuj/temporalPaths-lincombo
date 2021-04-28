@@ -492,8 +492,10 @@ void Graph::minhop(int source)
 		/*if(vertexList[uu].t < eout[u])
 		   continue;*/
 		visited[uu] = true;
-		for(auto it=vertexList[uu].adjList.begin(); it != vertexList[uu].adjList.end(); it++){
-		    int neigh = it->first; //new index
+		//for(auto it=vertexList[uu].adjList.begin(); it != vertexList[uu].adjList.end(); it++){
+		for(int it=0; it<vertexList[uu].adjList.size(); it++){
+		    //int neigh = it->first; //new index
+		    int neigh = vertexList[uu].adjList[it].first; //new index
 		    int tOut = vertexList[neigh].t;
 		    int vv = vertexList[neigh].u; //old index
 		    if(newEout[vv] == -1 || tOut < vertexList[newEout[vv]].t){ 
