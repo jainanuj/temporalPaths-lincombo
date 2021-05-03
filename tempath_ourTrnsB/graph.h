@@ -17,13 +17,28 @@
 //--------------
 #include "Timer.h"
 
+//added by sanaz: if max timestamp fits into int or long
+//#define USE_INT
+
+#ifdef USE_INT
+#define TTYPE int 
+#else
+#define TTYPE long
+#endif
+
+
 using namespace std;
 
+#ifdef USE_INT
 const int infinity = 2e9;
+#else
+const long infinity = 2e18;
+#endif
 
 struct Edge
 {
-    int u, v, t, w;
+    int u, v, w;
+    TTYPE t; 
     bool operator < (const Edge that) const
     {
         if (t != that.t)
@@ -39,10 +54,10 @@ struct Edge
 //added by sanaz
 struct Node{
     int u; //the node id in the non-transformed graph
-    int t; //the time stamp corresponding to Vin/Vout
+    TTYPE t; //the time stamp corresponding to Vin/Vout
     vector<pair<int, int>> adjList;
     Node() {}
-    Node(int _u, int _t){
+    Node(int _u, TTYPE _t){
 	u = _u; 
 	t = _t; 
     }
@@ -97,7 +112,7 @@ public:
     vector< Edge > edge_list;
     vector< int > sources;
     int V, static_E, dynamic_E;
-    int t_start, t_end;
+    TTYPE t_start, t_end;
     double time_sum;
 	//vector <int> arr_time, f_time;
 	//vector < set < pair< int, int > > > ft_timepair; // arrival time, starting time
@@ -109,7 +124,7 @@ public:
     //added by sanaz
     vector<Node> vertexList; //a list of vertices in the transformed graph, sorted by u
     vector<int> voutStart; //an index into the vertexList: Vout set for node i (in the transformed graph) is in vertexList[voutStart[i], voutStart[i+1]) 
-    vector<int> distances; 
+    vector<TTYPE> distances; 
     vector<vector<pair<int, int>>> rev_adjList; //adjacency list with reversed edges used in "latest" function
     //--------------
 };

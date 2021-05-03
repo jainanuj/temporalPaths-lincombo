@@ -13,7 +13,11 @@ Graph::Graph(const char* filePath)
 	Edge e; 
     for(int i = 0; i < dynamic_E; i ++)
     {
+	#ifdef USE_INT
         x=fscanf(file, "%d %d %d %d",&e.u, &e.v, &e.t, &e.w);
+	#else
+	x=fscanf(file, "%d %d %ld %d",&e.u, &e.v, &e.t, &e.w);
+	#endif
         edge_list.push_back(e);
     }
 
@@ -32,11 +36,11 @@ void Graph::dominatedRemoval(){
     int listSize = edge_list.size();
     int i = listSize-1;
     while(i>=0){
-        int minTW = edge_list[i].t+edge_list[i].w;
+        TTYPE minTW = edge_list[i].t+edge_list[i].w;
         int curU = edge_list[i].u;
         int curV = edge_list[i].v;
         while(--i>=0 && edge_list[i].u == curU && edge_list[i].v == curV ){
-             int tmpTW = edge_list[i].t + edge_list[i].w;
+             TTYPE tmpTW = edge_list[i].t + edge_list[i].w;
              if(tmpTW >= minTW)
                 edge_list.erase(edge_list.begin()+i);
              else
@@ -53,17 +57,17 @@ void Graph::dominatedRemoval(){
 
 //added by sanaz
 void Graph::transform(){
-   vector<set<int>> Tout; //the set of distinct in times for each node
+   vector<set<TTYPE>> Tout; //the set of distinct in times for each node
    Tout.resize(V);
    for(Edge e : edge_list){
 	Tout[e.u].insert(e.t);
    }
 
-   set <int>::iterator it; 
+   set <TTYPE>::iterator it; 
    //to map (u, t) to their corresponding IDs in the transformed graph
-   map<pair<int, int>, int> outMap;
+   map<pair<int, TTYPE>, int> outMap;
    int index = 0; 
-   int t; 
+   TTYPE t; 
    for(int i=0; i<V; i++){
 	voutStart.push_back(index);
 	Tout[i].insert(infinity); //so that nodes with empty Tout but non-empty Tin are not discarded
@@ -324,7 +328,7 @@ void Graph::fastest(int source)
 
     for(int it=voutStart[source+1]-1; it>=voutStart[source]; it--){
 	visited[it] = true;
-	int ts = vertexList[it].t; //start time
+	TTYPE ts = vertexList[it].t; //start time
 	if(ts < t_start)
 	   break;
 	Q.push(it);
@@ -334,7 +338,7 @@ void Graph::fastest(int source)
 	    for(auto neighbor=vertexList[node].adjList.begin(); neighbor!=vertexList[node].adjList.end(); neighbor++){
 		int nID = neighbor->first; 	
 		Node neiNode = vertexList[nID];
-		int inTime = vertexList[node].t + neighbor->second;	
+		TTYPE inTime = vertexList[node].t + neighbor->second;	
 		if(inTime <= t_end){
 		   if(!visited[nID]){
 		      visited[nID] = true; 

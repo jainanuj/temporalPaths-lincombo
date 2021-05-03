@@ -13,7 +13,11 @@ Graph::Graph(const char* filePath)
 	Edge e; 
     for(int i = 0; i < dynamic_E; i ++)
     {
+	#ifdef USE_INT
         x=fscanf(file, "%d %d %d %d",&e.u, &e.v, &e.t, &e.w);
+	#else
+	x=fscanf(file, "%d %d %ld %d",&e.u, &e.v, &e.t, &e.w);
+	#endif
         edge_list.push_back(e);
     }
 
@@ -32,11 +36,11 @@ void Graph::dominatedRemoval(){
     int listSize = edge_list.size();
     int i = listSize-1;
     while(i>=0){
-        int minTW = edge_list[i].t+edge_list[i].w;
+        TTYPE minTW = edge_list[i].t+edge_list[i].w;
         int curU = edge_list[i].u;
         int curV = edge_list[i].v;
         while(--i>=0 && edge_list[i].u == curU && edge_list[i].v == curV ){
-             int tmpTW = edge_list[i].t + edge_list[i].w;
+             TTYPE tmpTW = edge_list[i].t + edge_list[i].w;
              if(tmpTW >= minTW)
                 edge_list.erase(edge_list.begin()+i);
              else
@@ -49,21 +53,21 @@ void Graph::dominatedRemoval(){
 
 //added by sanaz
 void Graph::transform(){
-   vector<set<int>> Tout; //the set of distinct out times for each node
+   vector<set<TTYPE>> Tout; //the set of distinct out times for each node
    Tout.resize(V);
-   vector<int> maxIN(V, -1); //max in-time for each node
-   vector<int> maxOUT(V, -1); //max out-time for each node
+   vector<TTYPE> maxIN(V, -1); //max in-time for each node
+   vector<TTYPE> maxOUT(V, -1); //max out-time for each node
    for(Edge e : edge_list){
 	Tout[e.u].insert(e.t);
         maxOUT[e.u] = max(maxOUT[e.u], e.t);
 	maxIN[e.v] = max(maxIN[e.v], e.t+e.w);
    }
 
-   set <int>::iterator it; 
+   set <TTYPE>::iterator it; 
    //to map (u, t) to their corresponding IDs in the transformed graph
-   map<pair<int, int>, int> outMap;
+   map<pair<int, TTYPE>, int> outMap;
    int index = 0; 
-   int t; 
+   TTYPE t; 
    for(int i=0; i<V; i++){
 	voutStart.push_back(index);
 	//dummy node, so that the nodes with an empty Tout but non-empty Tin or nodes whose lost input cannot get out are accounted for
@@ -327,7 +331,7 @@ void Graph::fastest(int source)
     /*Our big assumption is that all edge weights are >= 0*/
     for(int it=voutStart[source+1]-1; it>=voutStart[source]; it--){
 	visited[it] = true;
-	int ts = vertexList[it].t; //start time
+	TTYPE ts = vertexList[it].t; //start time
 	if(ts > t_end)
 	   continue;
 	if(ts < t_start)
@@ -339,7 +343,7 @@ void Graph::fastest(int source)
 	    for(auto neighbor=vertexList[node].adjList.begin(); neighbor!=vertexList[node].adjList.end(); neighbor++){
 		int nID = neighbor->first; 	
 		Node neiNode = vertexList[nID];
-		int inTime = vertexList[node].t + neighbor->second;
+		TTYPE inTime = vertexList[node].t + neighbor->second;
 		if(inTime <= t_end){
 		   if((inTime-ts) < distances[neiNode.u])
 			 distances[neiNode.u] = (inTime-ts);
@@ -500,7 +504,7 @@ void Graph::minhop(int source)
 		for(int it=0; it<vertexList[uu].adjList.size(); it++){
 		    //int neigh = it->first; //new index
 		    int neigh = vertexList[uu].adjList[it].first; //new index
-		    int tOut = vertexList[neigh].t;
+		    TTYPE tOut = vertexList[neigh].t;
 		    int vv = vertexList[neigh].u; //old index
 		    if(newEout[vv] == -1 || tOut < vertexList[newEout[vv]].t){ 
 			if(newEout[vv] == -1){ //vv is newly reached

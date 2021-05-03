@@ -13,7 +13,11 @@ Graph::Graph(const char* filePath)
 	Edge e; 
     for(int i = 0; i < dynamic_E; i ++)
     {
+	#ifdef USE_INT
         x=fscanf(file, "%d %d %d %d",&e.u, &e.v, &e.t, &e.w);
+	#else
+	x=fscanf(file, "%d %d %ld %d",&e.u, &e.v, &e.t, &e.w);
+	#endif
         edge_list.push_back(e);
     }
 
@@ -32,11 +36,11 @@ void Graph::dominatedRemoval(){
     int listSize = edge_list.size();
     int i = listSize-1;
     while(i>=0){
-	int minTW = edge_list[i].t+edge_list[i].w;
+	TTYPE minTW = edge_list[i].t+edge_list[i].w;
 	int curU = edge_list[i].u;
 	int curV = edge_list[i].v;
 	while(--i>=0 && edge_list[i].u == curU && edge_list[i].v == curV ){
-	     int tmpTW = edge_list[i].t + edge_list[i].w;
+	     TTYPE tmpTW = edge_list[i].t + edge_list[i].w;
 	     if(tmpTW >= minTW)
 		edge_list.erase(edge_list.begin()+i);
 	     else
@@ -53,8 +57,8 @@ void Graph::dominatedRemoval(){
 
 //added by sanaz
 void Graph::transform(){
-   vector<set<int>> Tin; //the set of distinct in times for each node
-   vector<set<int>> Tout; //the set of distinct out times for each node
+   vector<set<TTYPE>> Tin; //the set of distinct in times for each node
+   vector<set<TTYPE>> Tout; //the set of distinct out times for each node
    Tin.resize(V);
    Tout.resize(V); 
    for(Edge e : edge_list){
@@ -63,13 +67,13 @@ void Graph::transform(){
 	Tout[e.u].insert(e.t);
    }
 
-   set <int>::iterator it; 
+   set <TTYPE>::iterator it; 
    //two maps to map (u, t) in Tin/Tout to their corresponding IDs in the transformed graph
-   map<pair<int, int>, int> inMap;
-   map<pair<int, int>, int> outMap;
+   map<pair<int, TTYPE>, int> inMap;
+   map<pair<int, TTYPE>, int> outMap;
    int index = 0; 
    //Node tmpNode; 
-   int t; 
+   TTYPE t; 
    for(int i=0; i<V; i++){
 	vinStart.push_back(index);
 	for(it=Tin[i].begin(); it!=Tin[i].end(); it++){
@@ -91,18 +95,18 @@ void Graph::transform(){
 
 
    //edge creation step a:
-   set <int>::reverse_iterator rit;
-   set <int>::iterator tmp_it;
-   unordered_set<int> matched; //t value of Tout[i] nodes that are already matched
+   set <TTYPE>::reverse_iterator rit;
+   set <TTYPE>::iterator tmp_it;
+   unordered_set<TTYPE> matched; //t value of Tout[i] nodes that are already matched
    for(int i=0; i<V; i++){ 
         matched.clear();
 	//iterate over Tin[i] in descending order of t (reverse)
 	for(rit = Tin[i].rbegin(); rit != Tin[i].rend(); rit++){ 
-	   int tIn = *rit; 
+	   TTYPE tIn = *rit; 
 	   tmp_it = Tout[i].lower_bound(tIn); //the first item that doesn't go before (t, newID)
            if(tmp_it == Tout[i].end()) 
 		continue;
-	   int tOut = *tmp_it; 
+	   TTYPE tOut = *tmp_it; 
 	   if(matched.find(tOut) == matched.end()){ 
 		matched.insert(tOut);
 	   	vertexList[inMap[make_pair(i, tIn)]].adjList.push_back(make_pair(outMap[make_pair(i, tOut)], 0));
@@ -116,7 +120,7 @@ void Graph::transform(){
 
 
    //edge creation step b:
-   set<int>::iterator it2; 
+   set<TTYPE>::iterator it2; 
    for(int i=0; i<V; i++){
       it = it2 = Tin[i].begin(); 
       if(it2!=Tin[i].end()) it2++;
@@ -388,7 +392,7 @@ void Graph::fastest(int source)
 
     for(int it=vinStart[source+1]-1; it>=voutStart[source]; it--){
         visited[it] = true;
-	int ts = vertexList[it].t; 
+	TTYPE ts = vertexList[it].t; 
 	if(ts > t_end)
 	   continue;
 	if(ts<t_start)
@@ -443,9 +447,9 @@ void Graph::shortest(int source)
     t.start();
 
     /*defining and initializing data structures*/
-    typedef pair<int, int> iPair; 	
+    typedef pair<TTYPE, int> iPair; 	
     priority_queue< iPair, vector <iPair> , greater<iPair> > pq; //pairs of <distance, id> sorted in increasing order of distance
-    vector<int> local_dist(vertexList.size(), infinity); //distance vector for the nodes in the transformed graph
+    vector<TTYPE> local_dist(vertexList.size(), infinity); //distance vector for the nodes in the transformed graph
     vector<bool> done(vertexList.size(), false); //keeping track of the nodes whose distance is established
     
     for(int it = voutStart[source]; it < vinStart[source+1]; it++)
@@ -463,7 +467,7 @@ void Graph::shortest(int source)
 	for(auto neigh=vertexList[node].adjList.begin(); neigh!=vertexList[node].adjList.end(); neigh++){
 	   int neiID = neigh->first;  
 	   if(!done[neiID] && vertexList[neiID].t >= t_start && vertexList[neiID].t <= t_end){
-		int newDist = local_dist[node]+neigh->second;
+		TTYPE newDist = local_dist[node]+neigh->second;
 		if(newDist < local_dist[neiID]){
 		   local_dist[neiID] = newDist; 
 		   pq.push(make_pair(newDist, neiID));  
@@ -510,16 +514,10 @@ void Graph::minhop(int source)
     Timer t;
     t.start();
 
-    //for debugging only:
-    /*vector<int> parents(V, -1);
-    vector<int> newParents(vertexList.size(), -1);
-    int step = 0;*/ 
-    //to here
-
     /*defining and initializing data structures*/
-    typedef pair<int, int> iPair; 	
+    typedef pair<TTYPE, int> iPair; 	
     priority_queue< iPair, vector <iPair> , greater<iPair> > pq; //pairs of <distance, id> sorted in increasing order of distance
-    vector<int> local_dist(vertexList.size(), infinity); //distance vector for the nodes in the transformed graph
+    vector<TTYPE> local_dist(vertexList.size(), infinity); //distance vector for the nodes in the transformed graph
     vector<bool> done(vertexList.size(), false); //keeping track of the nodes whose distance is established
     
     for(int it = voutStart[source]; it < vinStart[source+1]; it++){
@@ -538,19 +536,9 @@ void Graph::minhop(int source)
 	   int neiID = neigh->first;  
 	   if(!done[neiID] && vertexList[neiID].t >= t_start && vertexList[neiID].t <= t_end){
 		int linkW = (neigh->second == 0) ? 0 : 1;
-		int newDist = local_dist[node]+linkW;
+		TTYPE newDist = local_dist[node]+linkW;
 		if(newDist < local_dist[neiID]){
-		   //step++;
-		   //cout << step << " node.u: " << vertexList[neiID].u << " node.t: " << vertexList[neiID].t << " dist: " << newDist << " parent.u: " << vertexList[node].u << " parent.t: " << vertexList[node].t;
-		   /*if(vertexList[neiID].isVin)
-			cout << " Vin" << endl;
-		   else
-			cout << " Vout" << endl;*/
 		   local_dist[neiID] = newDist;
-		   /*if(linkW == 1)
-		      newParents[neiID] = vertexList[node].u;
-		   else
-		      newParents[neiID] = newParents[node];*/
 		   pq.push(make_pair(newDist, neiID));  
 		}
 	   }
@@ -561,8 +549,6 @@ void Graph::minhop(int source)
 	if(vertexList[i].isVin && vertexList[i].t >= t_start && vertexList[i].t <= t_end){
 	   int u = vertexList[i].u; 
 	   distances[u] = min(distances[u], local_dist[i]);
-           /*if(local_dist[i] <= distances[u])
-		parents[u] = newParents[i];*/
 	}
 	
     t.stop();
