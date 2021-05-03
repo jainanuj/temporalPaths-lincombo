@@ -10,15 +10,31 @@
 #include <iostream>
 #include "Timer.h"
 
+//added by sanaz: if max timestamp fits into int or long
+#define USE_INT
+
+#ifdef USE_INT
+#define TTYPE int 
+#else
+#define TTYPE long
+#endif
+
+
 using namespace std;
 
+#ifdef USE_INT
 const int infinity = 2e9;
+#else
+const long infinity = 2e18;
+#endif
+
 /*added by sanaz*/
 int numSources; 
 
 struct Edge
 {
-    int u, v, t, w;
+    int u, v, w;
+    TTYPE t; 
     bool operator < (const Edge that) const
     {
         if (t != that.t)
@@ -62,8 +78,8 @@ public:
     void fastest(int source, FILE * file);
     void run_shortest(const char* filePath);
     void shortest(int source, FILE * file);
-    void print_result(const int source, const vector<int>& t_time, FILE * file);
-    void print_result_ld(const int source, const vector<int>& t_time, FILE * file); 
+    void print_result(const int source, const vector<TTYPE>& t_time, FILE * file);
+    void print_result_ld(const int source, const vector<TTYPE>& t_time, FILE * file); 
     void print_avg_time(const char* filePath1, const char* filePath2);
 
     //added by sanaz:
@@ -74,11 +90,11 @@ public:
     vector< Edge > edge_list;
     vector< int > sources;
     int V, static_E, dynamic_E;
-    int t_start, t_end;
+    TTYPE t_start, t_end;
     double time_sum;
-	vector <int> arr_time, f_time;
-	vector < set < pair< int, int > > > ft_timepair; // arrival time, starting time
-	vector < set < pair< int, int > > > st_timepair; // arrival time, shortest distance 
+	vector <TTYPE> arr_time, f_time;
+	vector < set < pair< TTYPE, TTYPE > > > ft_timepair; // arrival time, starting time
+	vector < set < pair< TTYPE, TTYPE > > > st_timepair; // arrival time, shortest distance 
 };
 
 
@@ -96,7 +112,11 @@ Graph::Graph(const char* filePath)
 	Edge e; 
     for(int i = 0; i < dynamic_E; i ++)
     {
-        x=fscanf(file, "%d %d %d %d",&e.u, &e.v, &e.t, &e.w);
+	#ifdef USE_INT
+	x=fscanf(file, "%d %d %d %d",&e.u, &e.v, &e.t, &e.w);
+	#else
+        x=fscanf(file, "%d %d %ld %d",&e.u, &e.v, &e.t, &e.w);
+	#endif
         edge_list.push_back(e);
     }
 
@@ -260,13 +280,17 @@ void Graph::earliest_arrival(int source, FILE * file)
 	print_result(source, arr_time, file);
 }
 
-void Graph::print_result(const int source, const vector<int>& t_time, FILE * file)
+void Graph::print_result(const int source, const vector<TTYPE>& t_time, FILE * file)
 {
 	
 	for(int i = 0 ;i < V ;i ++)
     { 
     	if(t_time[i]!=infinity){
-    		fprintf(file, "%d %d %d %d %d\n", source, i, t_start, t_end, t_time[i]);
+		#ifdef USE_INT
+		fprintf(file, "%d %d %d %d %d\n", source, i, t_start, t_end, t_time[i]);
+		#else
+    		fprintf(file, "%d %d %ld %ld %ld\n", source, i, t_start, t_end, t_time[i]);
+		#endif
     	}
     }
 
@@ -354,13 +378,17 @@ void Graph::latest_departure(int source, FILE * file)
 	print_result_ld(source, arr_time, file);
 }
 
-void Graph::print_result_ld(const int source, const vector<int>& t_time, FILE * file)
+void Graph::print_result_ld(const int source, const vector<TTYPE>& t_time, FILE * file)
 {
 	
 	for(int i = 0 ;i < V ;i ++)
     { 
     	if(t_time[i]!=-1){
-    		fprintf(file, "%d %d %d %d %d\n", source, i, t_start, t_end, t_time[i]);
+		#ifdef USE_INT
+		fprintf(file, "%d %d %d %d %d\n", source, i, t_start, t_end, t_time[i]);
+		#else
+    		fprintf(file, "%d %d %ld %ld %ld\n", source, i, t_start, t_end, t_time[i]);
+		#endif
     	}
     }
 
@@ -392,7 +420,7 @@ void Graph::fastest(int source, FILE * file)
 		
 	f_time[source]=0;	
 	
-	set < pair< int, int > >::iterator it_tp, it_tp_low, it_tp_up, it_tp_1, it_tp_2;
+	set < pair< TTYPE, TTYPE > >::iterator it_tp, it_tp_low, it_tp_up, it_tp_1, it_tp_2;
 	
 	for(int i=0; i<dynamic_E; i ++) {
 		if(edge_list[i].t<t_end){
@@ -407,8 +435,8 @@ void Graph::fastest(int source, FILE * file)
 					if(it_tp != ft_timepair[edge_list[i].u].begin()){ //exists some pair arrived at or before t
 						it_tp --;
 						
-						int a_t=edge_list[i].t+edge_list[i].w;
-						int s_t=it_tp->second;
+						TTYPE a_t=edge_list[i].t+edge_list[i].w;
+						TTYPE s_t=it_tp->second;
 						
 						if(a_t-s_t < f_time[edge_list[i].v])
 							f_time[edge_list[i].v] = a_t-s_t;
@@ -514,7 +542,7 @@ void Graph::fastest(int source)
 		
 	f_time[source]=0;	
 	
-	set < pair< int, int > >::iterator it_tp, it_tp_low, it_tp_up, it_tp_1, it_tp_2;
+	set < pair< TTYPE, TTYPE > >::iterator it_tp, it_tp_low, it_tp_up, it_tp_1, it_tp_2;
 	
 	for(int i=0; i<dynamic_E; i ++) {
 		if(edge_list[i].t<t_end){
@@ -529,8 +557,8 @@ void Graph::fastest(int source)
 					if(it_tp != ft_timepair[edge_list[i].u].begin()){ //exists some pair arrived at or before t
 						it_tp --;
 						
-						int a_t=edge_list[i].t+edge_list[i].w;
-						int s_t=it_tp->second;
+						TTYPE a_t=edge_list[i].t+edge_list[i].w;
+						TTYPE s_t=it_tp->second;
 						
 						if(a_t-s_t < f_time[edge_list[i].v])
 							f_time[edge_list[i].v] = a_t-s_t;
@@ -642,7 +670,7 @@ void Graph::shortest(int source, FILE * file)
 	
 	f_time[source]=0;	
 	
-	set < pair< int, int > >::iterator it_tp, it_tp_low, it_tp_up, it_tp_1, it_tp_2;
+	set < pair< TTYPE, TTYPE > >::iterator it_tp, it_tp_low, it_tp_up, it_tp_1, it_tp_2;
 	
 	for(int i=0; i<dynamic_E; i ++) {
 		if(edge_list[i].t<t_end){
@@ -657,8 +685,8 @@ void Graph::shortest(int source, FILE * file)
 					if(it_tp != st_timepair[edge_list[i].u].begin()){ //exists some pair arrived at or before t
 						it_tp --;
 						
-						int a_t=edge_list[i].t+edge_list[i].w;
-						int s_d=it_tp->second+edge_list[i].w;
+						TTYPE a_t=edge_list[i].t+edge_list[i].w;
+						TTYPE s_d=it_tp->second+edge_list[i].w;
 						
 						if(s_d < f_time[edge_list[i].v])
 							f_time[edge_list[i].v] = s_d;
@@ -747,7 +775,7 @@ void Graph::shortest(int source)
 		
 	f_time[source]=0;	
 	
-	set < pair< int, int > >::iterator it_tp, it_tp_low, it_tp_up, it_tp_1, it_tp_2;
+	set < pair< TTYPE, TTYPE > >::iterator it_tp, it_tp_low, it_tp_up, it_tp_1, it_tp_2;
 	
 	for(int i=0; i<dynamic_E; i ++) {
 		if(edge_list[i].t<t_end){
@@ -762,8 +790,8 @@ void Graph::shortest(int source)
 					if(it_tp != st_timepair[edge_list[i].u].begin()){ //exists some pair arrived at or before t
 						it_tp --;
 						
-						int a_t=edge_list[i].t+edge_list[i].w;
-						int s_d=it_tp->second+edge_list[i].w;
+						TTYPE a_t=edge_list[i].t+edge_list[i].w;
+						TTYPE s_d=it_tp->second+edge_list[i].w;
 						
 						if(s_d < f_time[edge_list[i].v])
 							f_time[edge_list[i].v] = s_d;
@@ -854,7 +882,7 @@ void Graph::minhop(int source)
 		
 	f_time[source]=0;	
 	
-	set < pair< int, int > >::iterator it_tp, it_tp_low, it_tp_up, it_tp_1, it_tp_2;
+	set < pair< TTYPE, TTYPE > >::iterator it_tp, it_tp_low, it_tp_up, it_tp_1, it_tp_2;
 	
 	for(int i=0; i<dynamic_E; i ++) {
 		if(edge_list[i].t<t_end){
@@ -869,8 +897,8 @@ void Graph::minhop(int source)
 					if(it_tp != st_timepair[edge_list[i].u].begin()){ //exists some pair arrived at or before t
 						it_tp --;
 						
-						int a_t=edge_list[i].t+edge_list[i].w;
-						int s_d=it_tp->second+1;
+						TTYPE a_t=edge_list[i].t+edge_list[i].w;
+						TTYPE s_d=it_tp->second+1;
 						
 						if(s_d < f_time[edge_list[i].v])
 							f_time[edge_list[i].v] = s_d;
