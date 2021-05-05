@@ -103,6 +103,10 @@ void Graph::transform(){
 	}
    }
 
+   //adding a dummy node to be used in minhop 
+   Node tmp(-1, infinity);
+   vertexList.push_back(tmp);
+
    cerr << "number of edges after transform: " << edge_cnt << endl;
    cerr << "number of nodes after transform: " << index << endl;
 
@@ -471,10 +475,12 @@ void Graph::minhop(int source)
 
     vector<bool> live(V, false);
     vector<bool> newLive(V, false);
-    vector<int> eout(V, -1); //use indices instead of actual times - optimize loop for uu
-    vector<int> newEout(V, -1); //added to resolve the bug
+    //the last Vout[i] node from which node i took its exit
+    int numVertices = vertexList.size()-1; 
+    vector<int> eout(V, numVertices); //use indices instead of actual times - optimize loop for uu
+    vector<int> newEout(V, numVertices); //added to resolve the bug
     vector<int> uniqueV; //used in companion with newEout
-    vector<bool> visited(vertexList.size(), false);
+    vector<bool> visited(numVertices, false);
     //queue<int> Q;
     vector<int> Q; //used vector instead of queue for optimization
 
@@ -501,13 +507,14 @@ void Graph::minhop(int source)
 		   continue;*/
 		visited[uu] = true;
 		//for(auto it=vertexList[uu].adjList.begin(); it != vertexList[uu].adjList.end(); it++){
-		for(int it=0; it<vertexList[uu].adjList.size(); it++){
+		vector<pair<int, int>> x = vertexList[uu].adjList;
+		for(int it=0; it<x.size(); it++){
 		    //int neigh = it->first; //new index
-		    int neigh = vertexList[uu].adjList[it].first; //new index
+		    int neigh = x[it].first; //new index
 		    TTYPE tOut = vertexList[neigh].t;
 		    int vv = vertexList[neigh].u; //old index
-		    if(newEout[vv] == -1 || tOut < vertexList[newEout[vv]].t){ 
-			if(newEout[vv] == -1){ //vv is newly reached
+		    if(tOut < vertexList[newEout[vv]].t){ 
+			if(newEout[vv] == numVertices){ //vv is newly reached
 			   distances[vv] = hopCount;
 			   if(++count == V){ //all vertices reached
 				t.stop();
