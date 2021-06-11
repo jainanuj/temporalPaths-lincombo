@@ -72,9 +72,13 @@ public:
     Graph() {}
     Graph(const char* filePath); // input file
     //added by sanaz
-    void transform(); 
+    bool transform(); 
     void print_adjList(); //used for debugging
-    void dominatedRemoval(); //to remove the dominant edges from the edge list
+    void dominatedRemoval(); //to remove the dominant edges from the edge list 
+    bool cycleDetector();
+    bool cycleRec(vector<bool> visited, vector<bool> inStack, int index); //recursive function to find the cycles
+    void topologicalOrder();
+    topologicalRec(vector<bool> visited, vector<int> tpOrdered, int i); //the recursive function called inside topologicalOrder()
     //--------------
     void initial_query(const char* filePath, int numS); // query file, numS argument added by sanaz
     void initial_query(int numS); //numS argument added by sanaz
@@ -91,23 +95,11 @@ public:
     void run_shortest(); 
     void shortest(int source);
     void print_avg_time();
-    
-    // for testing the correctness
-    /*void run_earliest_arrival(const char* filePath); // output the result
-    void earliest_arrival(int source, FILE * file);  
-    void run_latest_departure(const char* filePath); 
-    void latest_departure(int source, FILE * file); 
-    void run_fastest(const char* filePath);
-    void fastest(int source, FILE * file);
-    void run_shortest(const char* filePath);
-    void shortest(int source, FILE * file);
-    void print_result(const int source, const vector<int>& t_time, FILE * file);
-    void print_result_ld(const int source, const vector<int>& t_time, FILE * file); 
-    void print_avg_time(const char* filePath1, const char* filePath2);*/
 
     //added by sanaz:
     void run_minhop();
     void minhop(int source);
+    void minhop_acyclic(int source);
 
 public:
     vector< Edge > edge_list;
@@ -115,10 +107,6 @@ public:
     int V, static_E, dynamic_E;
     TTYPE t_start, t_end;
     double time_sum;
-	//vector <int> arr_time, f_time;
-	//vector < set < pair< int, int > > > ft_timepair; // arrival time, starting time
-	//vector < set < pair< int, int > > > st_timepair; // arrival time, shortest distance 
-
 
     /*added by sanaz*/
     int numSources; 
@@ -129,6 +117,7 @@ public:
     vector<int> voutStart; //an index into the vertexList: Vin set for node i (in the transformed graph) is in vertexList[voutStart[i], vinStart[i+1]) 
     vector<TTYPE> distances; 
     vector<vector<int>> rev_adjList; //adjacency list with reversed edges used in "latest" function
+    vector<int> tpOrdered; //keeps the (transformed) indices of the nodes in topological order
     //--------------
 };
 

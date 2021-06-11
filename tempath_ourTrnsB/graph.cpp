@@ -475,13 +475,11 @@ void Graph::minhop(int source)
 
     vector<bool> live(V, false);
     vector<bool> newLive(V, false);
-    //the last Vout[i] node from which node i took its exit
     int numVertices = vertexList.size()-1; 
     vector<int> eout(V, numVertices); //use indices instead of actual times - optimize loop for uu
     vector<int> newEout(V, numVertices); //added to resolve the bug
     vector<int> uniqueV; //used in companion with newEout
     vector<bool> visited(numVertices, false);
-    //queue<int> Q;
     vector<int> Q; //used vector instead of queue for optimization
 
     //Q.push(source);
@@ -493,23 +491,14 @@ void Graph::minhop(int source)
     int count = 1; 
 
     while(Q.size() > 0){
-	//int qSize = Q.size();
-	//for(int i=0; i<qSize; i++){
 	for(int i=0; i<Q.size(); i++){
-    	    //int u = Q.front();
 	    int u = Q[i];
 	    live[u] = false;
-	    //Q.pop();
-	    //try all feasible touts from u not tried before
-	    //for(int uu = voutStart[u]; uu < voutStart[u+1] && vertexList[uu].t <= t_end && !visited[uu]; uu++){ 
-	    for(int uu = eout[u]; uu < voutStart[u+1] && vertexList[uu].t <= t_end && !visited[uu]; uu++){ 
-		/*if(vertexList[uu].t < eout[u])
-		   continue;*/
+	    //try all feasible touts from u not tried before 
+	    for(int uu = eout[u]; uu < voutStart[u+1] && vertexList[uu].t <= t_end && !visited[uu]; uu++){
 		visited[uu] = true;
-		//for(auto it=vertexList[uu].adjList.begin(); it != vertexList[uu].adjList.end(); it++){
 		vector<pair<int, int>> x = vertexList[uu].adjList;
 		for(int it=0; it<x.size(); it++){
-		    //int neigh = it->first; //new index
 		    int neigh = x[it].first; //new index
 		    TTYPE tOut = vertexList[neigh].t;
 		    int vv = vertexList[neigh].u; //old index
@@ -525,18 +514,15 @@ void Graph::minhop(int source)
 				return;
 			   }
 			}//done
-			//newEout[vv] = tOut;
 			newEout[vv] = neigh;
 			if(!newLive[vv]){ 
 			   newLive[vv] = true;
 			   uniqueV.push_back(vv); //added to resolve the bug
-			   //Q.push(vv);
 			}
 		    }
 		}
 	    }
 	}
-        //vector<bool> tmpLive(V, false);
 	Q.clear();
 	for(int ii=0; ii<uniqueV.size(); ii++){
 	    int index = uniqueV[ii];

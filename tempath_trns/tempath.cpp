@@ -18,8 +18,13 @@ int main(int argc, char* argv[]){
     Graph g(argv[2]);
     
     //added by sanaz:
-    g.dominatedRemoval();
-    g.transform();
+    //g.dominatedRemoval();
+    bool isCyclic = g.transform();
+    if(!isCyclic)
+       isCyclic = g.cycleDetector(); 
+    if(!isCyclic){
+	g.topologicalOrder();
+    }
     //return 0; 
 
     /*modified by sanaz*/

@@ -56,7 +56,9 @@ void Graph::dominatedRemoval(){
 }
 
 //added by sanaz
-void Graph::transform(){
+bool Graph::transform(){
+   bool zeroW = false; //checks whether there are any links of w = 0 in the transformed graph
+
    vector<set<TTYPE>> Tin; //the set of distinct in times for each node
    vector<set<TTYPE>> Tout; //the set of distinct out times for each node
    Tin.resize(V);
@@ -110,6 +112,7 @@ void Graph::transform(){
 	   if(matched.find(tOut) == matched.end()){ 
 		matched.insert(tOut);
 	   	vertexList[inMap[make_pair(i, tIn)]].adjList.push_back(make_pair(outMap[make_pair(i, tOut)], 0));
+	 	zeroW = true;
 		edgeCnt++;
 	   }
 	}
@@ -126,6 +129,7 @@ void Graph::transform(){
       if(it2!=Tin[i].end()) it2++;
       while(it2 != Tin[i].end()){  
 	   vertexList[inMap[make_pair(i, *it)]].adjList.push_back(make_pair(inMap[make_pair(i, *it2)], 0));
+	   zeroW = true;
 	   it++;
 	   it2++;
 	   edgeCnt++;
@@ -134,6 +138,7 @@ void Graph::transform(){
       if(it2!=Tout[i].end()) it2++;
       while(it2 != Tout[i].end()){ 
 	   vertexList[outMap[make_pair(i, *it)]].adjList.push_back(make_pair(outMap[make_pair(i, *it2)], 0));
+	   zeroW = true;
 	   it++;
 	   it2++;
 	   edgeCnt++;
@@ -143,6 +148,8 @@ void Graph::transform(){
 
    //edge creation step c: 
    for(Edge e : edge_list){
+	if(e.w == 0)
+	   zeroW = true;
 	vertexList[outMap[make_pair(e.u, e.t)]].adjList.push_back(make_pair(inMap[make_pair(e.v, e.t+e.w)], e.w));
 	edgeCnt++;
    }
@@ -158,29 +165,52 @@ void Graph::transform(){
    cerr << "number of nodes after transformation: " << vertexList.size() << endl;
    cerr << "number of edges after transformation: " << edgeCnt << endl;
 
-   //for debugging:
-   //print_adjList();
-   //
-   //for debugging only:
-   /*for(int i=vinStart[4052]; i<vinStart[4053]; i++)
-	for(auto it=vertexList[i].adjList.begin(); it!=vertexList[i].adjList.end(); it++){
-	    int v = it->first;
-	    if(vertexList[v].u == 6497){
-		cerr << "(" << vertexList[i].u << ", " << vertexList[i].t << ", ";
-		if(vertexList[i].isVin)
-		   cerr << "Vin)";
-		else 
-		   cerr << "Vout)";
-		cerr << " -> ";
-		cerr << "(" << vertexList[v].u << ", " << vertexList[v].t << ", ";
-                if(vertexList[v].isVin)
-                   cerr << "Vin)";
-                else
-                   cerr << "Vout)";
-		cerr << endl;
-	    }
-        }*/
+   return zeroW;
 }
+
+bool cycleDetector(){
+   vector<bool> inStack(vertexList.size(), false);
+   vector<bool> visited(vertexList.size(), false);
+   for(int i=0; i<vertexList.size(); i++){
+	if(!visited[i] && cycleRec(visited, inStack, i))
+	  return true;
+   }
+   return false;
+}
+
+bool cycleRec(vector<bool> visited, vector<bool> inStack, int index){
+   visited[index] = true;
+   inStack[index] = true;
+   for(int i=0; i<vertexList[index].adjList.size(); i++){
+	int neigh = vertexList[index].adjList[i].first;
+	if(inStack[neigh])
+	   return true;
+        if(!visited[neigh] && cycleRec(visited, inStack, neigh))
+	   return true;
+   }
+   inStack[index] = false;
+   return false;
+}
+
+void topologicalOrder(){
+   int n = vertexList.size();
+   vector<bool> visited(n, false);
+   for(int i=0; i<n; i++){
+	if(!visited[i])
+	   topologicalRec(visited, tpOrdered, i);
+   }
+}
+
+topologicalRec(vector<bool> visited, vector<int> tpOrdered, int i){
+   visited[i] = true;
+   for(int i=0; i<vertexList[index].adjList.size(); i++){
+	int neigh = vertexList[index].adjList[i].first;
+	if(!visited[neigh])
+	   topologicalRec(visited, tpOrdered, neigh);
+   }
+   tpOrdered.push_back(i);
+}
+
 void Graph::print_adjList(){  
    cout << "(u1, t1, Vin1/Vout1) (u2, t2, Vin2/Vout2) W" << endl; 
 
@@ -557,6 +587,20 @@ void Graph::minhop(int source)
     /*for debugging only*/
     for(int i=0; i<distances.size(); i++)
 	cout << distances[i] << endl;
+}
+
+void minhop_acyclic(int source){
+    vector<TTYPE> localDist(vertexList.size(), infinity);
+    for(int it = voutStart[source]; it < vinStart[source+1]; it++){
+	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end)
+	   localDist[it] = 0;
+    }
+    
+    /*process the nodes in topological order*/
+    for(int i=0; i<vertexList.size(); i++){
+	int index = tpOrdered[i];
+  	
+    }
 }
 
 //--------------//
