@@ -168,7 +168,7 @@ bool Graph::transform(){
    return zeroW;
 }
 
-bool cycleDetector(){
+bool Graph::cycleDetector(){
    vector<bool> inStack(vertexList.size(), false);
    vector<bool> visited(vertexList.size(), false);
    for(int i=0; i<vertexList.size(); i++){
@@ -178,7 +178,7 @@ bool cycleDetector(){
    return false;
 }
 
-bool cycleRec(vector<bool> visited, vector<bool> inStack, int index){
+bool Graph::cycleRec(vector<bool> visited, vector<bool> inStack, int index){
    visited[index] = true;
    inStack[index] = true;
    for(int i=0; i<vertexList[index].adjList.size(); i++){
@@ -192,23 +192,23 @@ bool cycleRec(vector<bool> visited, vector<bool> inStack, int index){
    return false;
 }
 
-void topologicalOrder(){
+void Graph::topologicalOrder(){
    int n = vertexList.size();
    vector<bool> visited(n, false);
    for(int i=0; i<n; i++){
 	if(!visited[i])
-	   topologicalRec(visited, tpOrdered, i);
+	   topologicalRec(visited, i);
    }
 }
 
-topologicalRec(vector<bool> visited, vector<int> tpOrdered, int i){
-   visited[i] = true;
+void Graph::topologicalRec(vector<bool>& visited, int index){
+   visited[index] = true;
    for(int i=0; i<vertexList[index].adjList.size(); i++){
 	int neigh = vertexList[index].adjList[i].first;
 	if(!visited[neigh])
-	   topologicalRec(visited, tpOrdered, neigh);
+	   topologicalRec(visited, neigh);
    }
-   tpOrdered.push_back(i);
+   tpOrdered.insert(tpOrdered.begin(), index);
 }
 
 void Graph::print_adjList(){  
@@ -522,7 +522,7 @@ void Graph::shortest(int source)
 }
 
 //added by sanaz//
-void Graph::run_minhop()
+void Graph::run_minhop(bool isCyclic)
 {
     time_sum=0;
 	
@@ -532,7 +532,10 @@ void Graph::run_minhop()
 	for(int j=0; j<V; j++)
 	  distances[j] = infinity; 
 	distances[sources[i]] = 0; 
-    	minhop(sources[i]);
+	if(isCyclic)
+    	   minhop(sources[i]);
+	else
+	   minhop_acyclic(sources[i]);
     }
     
     print_avg_time();
@@ -589,7 +592,8 @@ void Graph::minhop(int source)
 	cout << distances[i] << endl;
 }
 
-void minhop_acyclic(int source){
+//added by Sanaz
+void Graph::minhop_acyclic(int source){
     vector<TTYPE> localDist(vertexList.size(), infinity);
     for(int it = voutStart[source]; it < vinStart[source+1]; it++){
 	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end)
@@ -599,8 +603,24 @@ void minhop_acyclic(int source){
     /*process the nodes in topological order*/
     for(int i=0; i<vertexList.size(); i++){
 	int index = tpOrdered[i];
-  	
+  	for(int j=0; j<vertexList[index].adjList.size(); j++){
+	    int neigh = vertexList[index].adjList[j].first;
+	    int linkW = (vertexList[index].adjList[j].second == 0)? 0 : 1;
+	    if(localDist[neigh] > localDist[index] + linkW)
+		localDist[neigh] = localDist[index] + linkW;
+	}
     }
+
+    /*use localDist to compute distances*/
+    for(int i=0; i<vertexList.size(); i++)
+	if(vertexList[i].isVin && vertexList[i].t >= t_start && vertexList[i].t <= t_end){
+	   int u = vertexList[i].u; 
+	   distances[u] = min(distances[u], localDist[i]);
+	}
+
+    /*for debugging only*/
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;
 }
 
 //--------------//
