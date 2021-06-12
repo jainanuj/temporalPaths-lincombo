@@ -26,6 +26,7 @@ int main(int argc, char* argv[]){
     if(!isCyclic){
 	g.topologicalOrder();
     }
+    //return 0;
 
     /*modified by sanaz*/
     int numS = stoi(argv[3]);

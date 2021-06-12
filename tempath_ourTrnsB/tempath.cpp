@@ -18,12 +18,15 @@ int main(int argc, char* argv[]){
     Graph g(argv[2]);
     
     //added by sanaz:
-    g.dominatedRemoval();
-    //cout << "after dominated removal" << endl;
-    g.transform();
+    //g.dominatedRemoval();
+    bool hasZeroW = g.transform();    
+    bool isCyclic = false;
+    if(hasZeroW)
+       isCyclic = g.cycleDetector();     
+    if(!isCyclic){
+	g.topologicalOrder();
+    }
     //return 0; 
-    //cout << "after transform" << endl;
-    //g.print_adjList(); //for debugging
 
     /*modified by sanaz*/
     int numS = stoi(argv[3]);
@@ -58,7 +61,7 @@ int main(int argc, char* argv[]){
     }
     else if(!strcmp(option,"minhop")) //added by sanaz
     {
-	g.run_minhop();
+	g.run_minhop(isCyclic);
     }
 	
     //cout<<"hello world!!!" <<endl; //removed by sanaz, I see no reason for this statement

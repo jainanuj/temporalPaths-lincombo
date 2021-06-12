@@ -53,6 +53,8 @@ void Graph::dominatedRemoval(){
 
 //added by sanaz
 void Graph::transform(){
+   bool zeroW = false; //checks whether there are any links of w = 0 in the transformed graph
+
    vector<set<TTYPE>> Tout; //the set of distinct out times for each node
    Tout.resize(V);
    vector<TTYPE> maxIN(V, -1); //max in-time for each node
@@ -97,6 +99,8 @@ void Graph::transform(){
 	   if(t >= e.t+e.w){
 	      int v_index = outMap[make_pair(e.v, t)];
 	      vertexList[u_index].adjList.push_back(make_pair(v_index, e.w));
+	      if(e.w == 0)
+		 zeroW = true;
 	      edge_cnt++; // just for debugging
 	      break;
 	   }
@@ -107,8 +111,8 @@ void Graph::transform(){
    Node tmp(-1, infinity);
    vertexList.push_back(tmp);
 
-   cerr << "number of edges after transform: " << edge_cnt << endl;
    cerr << "number of nodes after transform: " << index << endl;
+   cerr << "number of edges after transform: " << edge_cnt << endl;
 
    //filling up the reverse adjacency list:
    rev_adjList.resize(index);
@@ -118,8 +122,50 @@ void Graph::transform(){
         }
    }
 
-   //for debugging:
-   //print_adjList();
+   return zeroW;
+}
+
+bool Graph::cycleDetector(){
+   vector<bool> inStack(vertexList.size(), false);
+   vector<bool> visited(vertexList.size(), false);
+   for(int i=0; i<vertexList.size(); i++){
+	if(!visited[i] && cycleRec(visited, inStack, i))
+	  return true;
+   }
+   return false;
+}
+
+bool Graph::cycleRec(vector<bool> visited, vector<bool> inStack, int index){
+   visited[index] = true;
+   inStack[index] = true;
+   for(int i=0; i<vertexList[index].adjList.size(); i++){
+	int neigh = vertexList[index].adjList[i].first;
+	if(inStack[neigh])
+	   return true;
+        if(!visited[neigh] && cycleRec(visited, inStack, neigh))
+	   return true;
+   }
+   inStack[index] = false;
+   return false;
+}
+
+void Graph::topologicalOrder(){
+   int n = vertexList.size();
+   vector<bool> visited(n, false);
+   for(int i=0; i<n; i++){
+	if(!visited[i])
+	   topologicalRec(visited, i);
+   }
+}
+
+void Graph::topologicalRec(vector<bool>& visited, int index){
+   visited[index] = true;
+   for(int i=0; i<vertexList[index].adjList.size(); i++){
+	int neigh = vertexList[index].adjList[i].first;
+	if(!visited[neigh])
+	   topologicalRec(visited, neigh);
+   }
+   tpOrdered.insert(tpOrdered.begin(), index);
 }
 
 void Graph::print_adjList(){  
@@ -461,7 +507,10 @@ void Graph::run_minhop()
 	for(int j=0; j<V; j++)
 	  distances[j] = infinity; 
 	distances[sources[i]] = 0; 
-    	minhop(sources[i]);
+	if(isCyclic)
+    	   minhop(sources[i]);
+	else
+	   minhop_acyclic(sources[i]);
     }
     
     print_avg_time();
@@ -542,6 +591,26 @@ void Graph::minhop(int source)
 	cout << distances[i] << endl;
 }
 
+void Graph::minhop_acyclic(int source){
+    vector<TTYPE> localDist(vertexList.size(), infinity);
+    for(int it = voutStart[source]; it < vinStart[source+1]; it++){
+	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end)
+	   localDist[it] = 0;
+    }
+    
+    /*TBD*/
+
+    /*use localDist to compute distances*/
+    for(int i=0; i<vertexList.size(); i++)
+	if(vertexList[i].isVin && vertexList[i].t >= t_start && vertexList[i].t <= t_end){
+	   int u = vertexList[i].u; 
+	   distances[u] = min(distances[u], localDist[i]);
+	}
+
+    /*for debugging only*/
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;
+}
 //--------------//
 
 void Graph::print_avg_time()

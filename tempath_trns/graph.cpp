@@ -592,7 +592,6 @@ void Graph::minhop(int source)
 	cout << distances[i] << endl;
 }
 
-//added by Sanaz
 void Graph::minhop_acyclic(int source){
     vector<TTYPE> localDist(vertexList.size(), infinity);
     for(int it = voutStart[source]; it < vinStart[source+1]; it++){
