@@ -52,7 +52,7 @@ void Graph::dominatedRemoval(){
 }
 
 //added by sanaz
-void Graph::transform(){
+bool Graph::transform(){
    bool zeroW = false; //checks whether there are any links of w = 0 in the transformed graph
 
    vector<set<TTYPE>> Tout; //the set of distinct out times for each node
@@ -128,7 +128,7 @@ void Graph::transform(){
 bool Graph::cycleDetector(){
    vector<bool> inStack(vertexList.size(), false);
    vector<bool> visited(vertexList.size(), false);
-   for(int i=0; i<vertexList.size(); i++){
+   for(int i=0; i<vertexList.size()-1; i++){ //ignore the last dummy node
 	if(!visited[i] && cycleRec(visited, inStack, i))
 	  return true;
    }
@@ -150,7 +150,7 @@ bool Graph::cycleRec(vector<bool> visited, vector<bool> inStack, int index){
 }
 
 void Graph::topologicalOrder(){
-   int n = vertexList.size();
+   int n = vertexList.size()-1; //ignore the last dummy node
    vector<bool> visited(n, false);
    for(int i=0; i<n; i++){
 	if(!visited[i])
@@ -160,6 +160,10 @@ void Graph::topologicalOrder(){
 
 void Graph::topologicalRec(vector<bool>& visited, int index){
    visited[index] = true;
+   int u = vertexList[index].u;
+   //take care of the next chain neighbor
+   if(index+1 < voutStart[u+1] && !visited[index+1])
+	topologicalRec(visited, index+1);
    for(int i=0; i<vertexList[index].adjList.size(); i++){
 	int neigh = vertexList[index].adjList[i].first;
 	if(!visited[neigh])
@@ -497,7 +501,7 @@ void Graph::fastest(int source)
 }*/
 
 //added by sanaz//
-void Graph::run_minhop()
+void Graph::run_minhop(bool isCyclic)
 {
     time_sum=0;
 	
@@ -593,16 +597,27 @@ void Graph::minhop(int source)
 
 void Graph::minhop_acyclic(int source){
     vector<TTYPE> localDist(vertexList.size(), infinity);
-    for(int it = voutStart[source]; it < vinStart[source+1]; it++){
+    for(int it = voutStart[source]; it < voutStart[source+1]; it++){
 	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end)
 	   localDist[it] = 0;
     }
     
-    /*TBD*/
+    for(int i=0; i<tpOrdered.size(); i++){
+	int index = tpOrdered[i];
+	int u = vertexList[index].u;
+	//first, take care of the next chain neighbor
+	if(index+1 < voutStart[u+1])
+	   localDist[index+1] = min(localDist[index+1], localDist[index]);
+	//now, take care of the other neighbors
+	for(int j=0; j<vertexList[index].adjList.size(); j++){
+	   int neigh = vertexList[index].adjList[j].first;
+	   localDist[neigh] = min(localDist[index]+1, localDist[neigh]);
+	}	   
+    }
 
     /*use localDist to compute distances*/
-    for(int i=0; i<vertexList.size(); i++)
-	if(vertexList[i].isVin && vertexList[i].t >= t_start && vertexList[i].t <= t_end){
+    for(int i=0; i<vertexList.size()-1; i++) //ignore the dummy node
+	if(vertexList[i].t >= t_start && vertexList[i].t <= t_end){
 	   int u = vertexList[i].u; 
 	   distances[u] = min(distances[u], localDist[i]);
 	}
