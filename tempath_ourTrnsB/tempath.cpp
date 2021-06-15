@@ -27,14 +27,6 @@ int main(int argc, char* argv[]){
 	g.topologicalOrder();
     }
 
-    for(int i=0; i<g.vertexList.size(); i++)
-	cout << "i: " << i << ", u: " << g.vertexList[i].u << ", t: " << g.vertexList[i].t << endl;
-    cout << "g.tpOrdered.size(): " << g.tpOrdered.size() << endl; 
-    for(int i=0; i<g.tpOrdered.size(); i++)
-	cout << g.tpOrdered[i] << " "; 
-    cout << endl;
-    return 0; 
-
     /*modified by sanaz*/
     int numS = stoi(argv[3]);
     if(numS <= 0){
