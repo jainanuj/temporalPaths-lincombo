@@ -135,7 +135,7 @@ bool Graph::cycleDetector(){
    return false;
 }
 
-bool Graph::cycleRec(vector<bool> visited, vector<bool> inStack, int index){
+bool Graph::cycleRec(vector<bool>& visited, vector<bool>& inStack, int index){
    visited[index] = true;
    inStack[index] = true;
    for(int i=0; i<vertexList[index].adjList.size(); i++){

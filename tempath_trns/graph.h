@@ -76,7 +76,7 @@ public:
     void print_adjList(); //used for debugging
     void dominatedRemoval(); //to remove the dominant edges from the edge list 
     bool cycleDetector();
-    bool cycleRec(vector<bool> visited, vector<bool> inStack, int index); //recursive function to find the cycles
+    bool cycleRec(vector<bool>& visited, vector<bool>& inStack, int index); //recursive function to find the cycles
     void topologicalOrder();
     void topologicalRec(vector<bool>& visited, int i); //the recursive function called inside topologicalOrder()
     //--------------
