@@ -593,12 +593,15 @@ void Graph::minhop(int source)
 }
 
 void Graph::minhop_acyclic(int source){
+    Timer t;
+    t.start();
+
     vector<TTYPE> localDist(vertexList.size(), infinity);
     for(int it = voutStart[source]; it < vinStart[source+1]; it++){
 	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end)
 	   localDist[it] = 0;
     }
-    
+
     /*process the nodes in topological order*/
     for(int i=0; i<vertexList.size(); i++){
 	int index = tpOrdered[i];
@@ -616,6 +619,9 @@ void Graph::minhop_acyclic(int source){
 	   int u = vertexList[i].u; 
 	   distances[u] = min(distances[u], localDist[i]);
 	}
+
+    t.stop();
+    time_sum += t.GetRuntime();
 
     /*for debugging only*/
     for(int i=0; i<distances.size(); i++)

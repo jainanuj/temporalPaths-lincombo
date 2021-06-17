@@ -18,7 +18,7 @@
 #include "Timer.h"
 
 //added by sanaz: if max timestamp fits into int or long
-//#define USE_INT
+#define USE_INT
 
 #ifdef USE_INT
 #define TTYPE int 
