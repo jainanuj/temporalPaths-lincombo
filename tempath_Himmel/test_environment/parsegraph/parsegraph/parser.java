@@ -36,7 +36,7 @@ public class parser {
 			String[] tmp = filename.split("/");
 			String filename2 = tmp[tmp.length-1];
 			int errors = 0;
-			if(args.length>1){
+			/*if(args.length>1){
 				String flag = args[1];
 				if(flag.matches("[0-9]*")){
 					mode = 0;
@@ -48,7 +48,7 @@ public class parser {
 					end = Integer.parseInt(flag.split(",")[1]);
 					mode = 0;
 				}
-			}
+			}*/
 			
 			
 			int num_nodes = 0;
@@ -61,44 +61,55 @@ public class parser {
 			String line;
 			PriorityQueue<Edge> edges = new PriorityQueue<Edge>();
 			PriorityQueue<Edge> edges2 = new PriorityQueue<Edge>();
-			while((line=br.readLine())!=null){	
-				line = line.split("/")[0].trim();
-				line = line.replaceAll("\\s+",",");				
-				if(line.matches("[0-9]*,[0-9]*,[-]*[0-9]*,[-]*[0-9]*")){
-					String[] tmp2 = line.split(",");
-					int x = Integer.parseInt(tmp2[0]);		//start
-					int y = Integer.parseInt(tmp2[1]);		//end
-					int z = Integer.parseInt(tmp2[2]);		//weight
-					int w = Integer.parseInt(tmp2[3]);		//timestamp
+
+			//added by sanaz:
+			line = br.readLine(); //throw away the first line
+			//System.out.println(line);			
+
+			while((line=br.readLine())!=null){
+				//System.out.println(line);	
+				//line = line.split("/")[0].trim();
+				//line = line.replaceAll("\\s+",",");				
+				//if(line.matches("[0-9]*,[0-9]*,[-]*[0-9]*,[-]*[0-9]*")){
+					String[] tmp2 = line.split(" ");
+
+					//added by sanaz, to remove an exception made by the last line being only ""
+					if(tmp2.length < 4)
+					   break;
+
+					int u = Integer.parseInt(tmp2[0]);		//start- x
+					int v = Integer.parseInt(tmp2[1]);		//end- y
+					int t = Integer.parseInt(tmp2[2]);		//weight- z - used to be w
+					int w = Integer.parseInt(tmp2[3]);		//timestamp - w - used to be t
 					
-					if(z<1){	// if negative weight
+					/*if(z<1){	// if negative weight
 						z=1;
-					}
+					}*/
 					
-					if(!hash.containsKey(x)){
-						hash.put(x, num_nodes);
+					if(!hash.containsKey(u)){
+						hash.put(u, num_nodes);
 						num_nodes++;
 					}				
-					if(!hash.containsKey(y)){
-						hash.put(y, num_nodes);
+					if(!hash.containsKey(v)){
+						hash.put(v, num_nodes);
 						num_nodes++;
 					}
 					
-					if(z!=0){
+					if(w!=0){
 						e2++;
 						n2++;
 					}
 					
-					Edge e = new Edge(hash.get(x),hash.get(y),w,z);
+					Edge e = new Edge(hash.get(u),hash.get(v),t,w);
 					edges.add(e);
 					num_edges++;
 
-				}else{
+				/*}else{
 					if(errors==10){
 						System.out.println(line);
 					}
 					errors++;
-				}
+				}*/
 			}
 			br.close();
 			System.out.println("Num_errors: " + errors);
