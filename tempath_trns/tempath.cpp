@@ -19,14 +19,15 @@ int main(int argc, char* argv[]){
     
     //added by sanaz:
     //g.dominatedRemoval();
-    bool hasZeroW = g.transform();    
+    bool hasZeroW = g.transform();
     bool isCyclic = false;
     if(hasZeroW)
-       isCyclic = g.cycleDetector();     
+       isCyclic = g.cycleDetector();    
     if(!isCyclic){
 	g.topologicalOrder();
     }
-    //return 0;
+
+    cerr << "isCyclic: " << isCyclic << endl;
 
     /*modified by sanaz*/
     int numS = stoi(argv[3]);
