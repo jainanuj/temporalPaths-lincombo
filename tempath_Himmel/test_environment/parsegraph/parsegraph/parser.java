@@ -127,8 +127,8 @@ public class parser {
 				if(e.weigth!=0){
 					Edge e_1 = new Edge(e.start,curr,e.time,0);
 					Edge e_2;
-					if((long)e.time+(long)e.weigth>Integer.MAX_VALUE){
-						e_2 = new Edge(curr,e.end,Integer.MAX_VALUE,0);
+					if((long)e.time+(long)e.weigth>2000000000){
+						e_2 = new Edge(curr,e.end,2000000000,0);
 					}else{
 						e_2 = new Edge(curr,e.end,e.time+e.weigth,0);
 					}

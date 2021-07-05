@@ -12,7 +12,7 @@
 
 using namespace std;
 
-int beta = INT_MAX;
+int beta = 2e9;
 
 //create a file with [amount] many sources for the given input file in range of [0,|nodes|]
 void create_list(char* filePath, int amount){
@@ -57,7 +57,7 @@ void print_help(){
 	cout<<"			foremost"<<endl;
 	cout<<"			fastest"<<endl;
 	cout<<"			reverse"<<endl;
-	cout<<"			hopcount"<<endl;
+	cout<<"			minhop"<<endl;
 	cout<<"			cheapest"<<endl;
     cout<<"	l/linear:"<<endl;
 	cout<<"		If flag is active, then optimal walks for a linear combination of the optimality criteria are computed."<<endl;
@@ -66,13 +66,13 @@ void print_help(){
 	cout<<"			-v,reverse"<<endl;
 	cout<<"			-w,fastest"<<endl;
 	cout<<"			-x,weight"<<endl;
-	cout<<"			-y,hopcount"<<endl;
+	cout<<"			-y,minhop"<<endl;
 	cout<<"			-z,waiting"<<endl;
 	cout<<"	"<<endl;
 	cout<<"	e/edge:"<<endl;
 	cout<<"		The path to the file containing an edge list. All algorithms need a edge file to run."<<endl;
 	cout<<" "<<endl;
-	cout<<"The algorithm expects either a node file or a beta value. Otherwise we use a default beta value of MAX_INT."<<endl;
+	cout<<"The algorithm expects either a node file or a beta value. Otherwise we use a default beta value of 2e9."<<endl;
 	cout<<"	b/beta:"<<endl;
 	cout<<"		Integer indicating the dwell time of all vertices of the input."<<endl;
 	cout<<" "<<endl;
@@ -128,7 +128,7 @@ int main(int argc, char* argv[]){
 	  ("v,reverse", "Weight Reverse-Foremost", cxxopts::value<int>()->default_value("1"))  // @suppress("Symbol is not resolved") // 
 	  ("w,fastest", "Weight Fastest", cxxopts::value<int>()->default_value("1"))  // @suppress("Symbol is not resolved") // 
 	  ("x,weight", "Weight Weight", cxxopts::value<int>()->default_value("1"))  // @suppress("Symbol is not resolved") // 
-	  ("y,hopcount", "Weight Hopcount", cxxopts::value<int>()->default_value("1"))  // @suppress("Symbol is not resolved") // 
+	  ("y,minhop", "Weight Minhop", cxxopts::value<int>()->default_value("1"))  // @suppress("Symbol is not resolved") // 
 	  ("z,waiting", "Weight Waiting", cxxopts::value<int>()->default_value("1"))  // @suppress("Symbol is not resolved") // 
      ("print", "Prints optimum values of algorithm as output [Scales badly]", cxxopts::value<bool>()->default_value("false")->implicit_value("true")) // @suppress("Symbol is not resolved") // @suppress("Invalid arguments") // @suppress("Method cannot be resolved")
 	;
@@ -145,7 +145,7 @@ int main(int argc, char* argv[]){
 	if(result.count("beta") != 0){
 		beta = result["beta"].as<int>();
 	}else{
-		beta = INT_MAX;
+		beta = 2e9;
 	}
 
 	if(result.count("edge") == 0){
@@ -191,7 +191,7 @@ int main(int argc, char* argv[]){
 	for(int source: g.sources){
 		//run algorithm
         if(result.count("linear") != 0) {
-            g.run_algo_linear_combination(source, result["foremost"].as<int>(), result["reverse"].as<int>(), result["fastest"].as<int>(), result["weight"].as<int>(), result["hopcount"].as<int>(), result["waiting"].as<int>());
+            g.run_algo_linear_combination(source, result["foremost"].as<int>(), result["reverse"].as<int>(), result["fastest"].as<int>(), result["weight"].as<int>(), result["minhop"].as<int>(), result["waiting"].as<int>());
         } else {
             g.run_algo(strdup(result["algo"].as<std::string>().c_str()), source);
         }
@@ -244,7 +244,8 @@ int main(int argc, char* argv[]){
 	 * backtracking, cycles_min, max, median, first, third, medium
 	 * pathruntime_min, max, median, first, third, medium
 	 */
-	cout<<result["edge"].as<std::string>()<<","<<flush;
+
+	/*cout<<result["edge"].as<std::string>()<<","<<flush;
 	cout<<result["algo"].as<std::string>()<<","<<flush;
 	cout<<g.V<<","<<flush;
 	cout<<g.dynamic_E<<","<<flush;
@@ -262,7 +263,14 @@ int main(int argc, char* argv[]){
 		g.boxplot(g.cycles);
 		g.boxplot(pathruntime);
 	}
-	cout<<","<<endl;
+	cout<<","<<endl;*/
+
+	//added by sanaz:
+        cout << "the distances:" << endl;
+        g.print_earliest(strdup(result["algo"].as<std::string>().c_str()));
+	cout << "the average time:" << endl;
+	g.print_avg_time();
+
 	return 0;
 }
 

@@ -21,7 +21,7 @@
 using namespace std;
 //namespace po = boost::program_options;
 
-const int infinity = INT_MAX;
+const int infinity = 2e9;
 
 struct tuples {
     int d;	//use index, weight for queue
@@ -67,7 +67,7 @@ public:
     //additional function
     void print_path();
     void pathing(int end, int source);
-    void print_earliest();
+    void print_earliest(char* algo);
     void print_time(string s);
     void count_visited();
 
@@ -151,7 +151,7 @@ public:
 	vector <double> cycles;
 	std::map <int,int> timemap;
 	bool backtracking = false;
-    int c_foremost, c_reverse, c_fastest, c_weight, c_hopcount, c_waiting;
+    int c_foremost, c_reverse, c_fastest, c_weight, c_minhop, c_waiting;
 
 };
 /**
@@ -175,7 +175,7 @@ void Graph::read_graph(FILE* file, int x, bool no_compression, bool backtrack){
 	edge_track.resize(V);			                   //list to keep track of visited edges from all nodes
     backtracking_tmp.resize(V);
     backtracking_opt.resize(V, std::tuple <int,int,int> ());
-	t_end = INT_MAX;
+	t_end = 2e9;
 
 	int num_timestamps = 0;
 
@@ -304,7 +304,7 @@ void Graph::run_algo(char* algo, int source){
 	if(!strcmp(algo,"reverse")){
 		run_reverse_foremost(source);
 	}
-	if(!strcmp(algo,"hopcount")){
+	if(!strcmp(algo,"minhop")){
 		run_hop_count(source);
 	}
 	if(!strcmp(algo,"cheapest")){
@@ -321,7 +321,7 @@ void Graph::run_algo_linear_combination(int source, int c1, int c2, int c3, int 
     c_reverse = c2;
     c_fastest = c3;
     c_weight = c4;
-    c_hopcount = c5;
+    c_minhop = c5;
     c_waiting = c6;
     
     run_linear_combination(source);
@@ -343,7 +343,7 @@ void Graph::initial_algo1(int var){
         //backtracking_tmp[i] = 0;
 	}
 
-	int min = INT_MAX;
+	int min = 2e9;
 	for(Edge e: edge_matrix[var]){
 		if(e.t<min){
 			min = e.t;
@@ -512,7 +512,7 @@ void Graph::initial_variations(int var){
 	}
 
 	int length = edge_matrix[var].size();
-	int min = INT_MAX;
+	int min = 2e9;
 	for(Edge e: edge_matrix[var]){		//find minimum timestamp with outgoing edge from source [earlier timestamps yield no result]
 		if(e.t<min){
 			min = e.t;
@@ -573,9 +573,9 @@ void Graph::initial_linear_combination(int var){
 	for(int i=0;i<edge_matrix.size();i++){
 		for(int j=0;j<edge_matrix[i].size();j++){
 			if(edge_matrix[i][j].u==var){
-				edge_matrix[i][j].o = ( c_fastest + c_reverse ) * ( t_last - edge_matrix[i][j].t ) +  c_weight * edge_matrix[i][j].w  + c_hopcount;
+				edge_matrix[i][j].o = ( c_fastest + c_reverse ) * ( t_last - edge_matrix[i][j].t ) +  c_weight * edge_matrix[i][j].w  + c_minhop;
 			}else{
-				edge_matrix[i][j].o = c_weight * edge_matrix[i][j].w + c_hopcount;
+				edge_matrix[i][j].o = c_weight * edge_matrix[i][j].w + c_minhop;
 			}
 		}
 	}
@@ -708,7 +708,7 @@ void Graph::mod_dijkstra(int time, int source, int counter, bool cheapest, bool 
 			/*
 			 * We added this part, because for the cheapest algorithm there may be a difference
 			 * between using the edge from E_T or continuing with E_R, because there are costs involved.
-			 * In comparison to hopcount and the other algorithms we do not favor any of both choices, thus
+			 * In comparison to minhop and the other algorithms we do not favor any of both choices, thus
 			 * we need to check both.
 			 * For the other algorithms, we priorize using the edge from E_T
 			 */
@@ -1083,9 +1083,17 @@ void Graph::print_time(string s){
 	cout<<s<<"Average: "<<mean/length<<endl;
 }
 
-void Graph::print_earliest(){
+void Graph::print_earliest(char* algo){
 	cout<<"Arr_time:"<<endl;
-	for(int i=0;i<V;i++){
+	//added by sanaz:
+	if(!strcmp(algo,"minhop")){ 
+	   for(int i=0;i<original_V;i++){
+	       cout<<(arr_time[i]/2)<<endl;
+	   }
+	   return;
+	}
+	for(int i=0;i<original_V;i++){
+        //for(int i=0;i<original_V;i++){
 		cout<<arr_time[i]<<endl;
 	}
 }
