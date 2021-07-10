@@ -83,6 +83,8 @@ public:
     void run_algo2(int source);
     void single_source_fastest_walk(int source);
     void mod_dijkstra(int time,int source,int counter, bool cheapest, bool minwait, long (Graph::*fptr)(int, int,int));
+    //added by sanaz:
+    void mod_dijkstra_minhop(int time, int source, int counter, long (Graph::*fptr)(int, int, int));
 
     //variation
     void run_reverse_foremost(int source);
@@ -610,9 +612,9 @@ long Graph::linear_combination_function(int opt, int curr, int time){
  */
 void Graph::single_source_fastest_walk(int source){
 	int counter = 0;
-	for(int time: timestamps){	//run over all timestamps
-		if(time>=arr_time[source]){		//only for necessary timestamps
-			mod_dijkstra(time,source,counter,false, false, &Graph::fastest_function);	//run fastest with given input function for fastest
+	for(int time: timestamps){  //run over all timestamps
+		if(time>=arr_time[source]){  //only for necessary timestamps
+			mod_dijkstra(time,source,counter,false, false, &Graph::fastest_function); //run fastest with given input function for fastest
 			node_list[counter].clear();
 		}
 		counter++;
@@ -628,7 +630,7 @@ void Graph::min_hop_count(int source){
 	for(int time: timestamps){
 		if(time>=arr_time[source]){
 			//printf("Current Time: %d ---- Difference: %d \n",time, time - t );
-			mod_dijkstra(time,source,counter, false, false, &Graph::min_hop_count_function);
+			mod_dijkstra_minhop(time, source, counter, &Graph::min_hop_count_function)
 			node_list[counter].clear();
 		}
 		counter++;
@@ -1084,16 +1086,7 @@ void Graph::print_time(string s){
 }
 
 void Graph::print_earliest(char* algo){
-	//cout<<"Arr_time:"<<endl;
-	//added by sanaz:
-	/*if(!strcmp(algo,"minhop")){ 
-	   for(int i=0;i<original_V;i++){
-	       cout<< (arr_time[i]/2)<<endl;
-	   }
-	   return;
-	}*/
 	for(int i=0;i<original_V;i++){
-        //for(int i=0;i<original_V;i++){
 		cout<< arr_time[i]<<endl;
 	}
 }
@@ -1152,5 +1145,172 @@ void Graph::pathing(int target, int source){
         }
     }
 }
+
+/*----------------------------------------------------------------------*/
+//added by sanaz: to run minhop ignoring the newly added nodes
+void Graph::mod_dijkstra_minhop(int time, int source, int counter, long (Graph::*fptr)(int, int, int)){
+   
+    vector<int> reset;
+    vector<int> nodes;
+    std::priority_queue<tuples,std::vector<tuples>, std::greater<tuples>> q;
+    tuples t;
+    distance[source] = arr_time[source];
+    // go through all out going arcs of the source vertex at time time
+    //printf("Start with time step %d \n",time);
+	for(int i = edge_track[source];i<source_length;i++){	//run over edges from source
+		Edge e = edge_matrix[source][i];
+		if(e.t==time){
+		   /*if(e.u >= original_V){
+		       distance[e.v] = distance[e.u];
+		       reached_algo2[e.v] = std::make_tuple (distance[e.u], source, time);
+		   }else{*/
+		       distance[e.v] = e.o;
+                       reached_algo2[e.v] = std::make_tuple (e.o, source, time);
+		   //}
+                   t.a = e.v;
+                   t.d = e.o;
+                   q.push(t);
+                   nodes.push_back(e.v);
+                   reset.push_back(e.v);
+			
+		   if(backtracking){
+                      backtracking_tmp[e.v] = time;
+		   }
+
+		   if(f_time[e.v]==infinity){	//node visited first time -> fill node_list
+			f_time[e.v] = time;
+			int length2 = edge_matrix[e.v].size();
+			for(int j=edge_track[e.v];j<length2;j++){
+			     Edge e2 = edge_matrix[e.v][j];
+			     if(e2.t>time){
+                        	  node_list[timemap[e2.t]].push_back(e2.u);
+			     }else if(e2.t<time){
+				  edge_track[e.v]=j;
+			     }
+			}
+		   }
+		}else if(e.t>time){
+		    edge_track[source] = i;
+		    break;
+                }
+        }
+
+	for(int i: node_list[counter]){	//push node to queue if reached before and has outgoing edges        
+            while(!d_list[i].empty() && distance[i]==infinity){            
+            	   std::tuple <int,int> curr = d_list[i].front();
+		   if((long) std::get<0> (curr) + (long)dwell_time[i] >= (long)time){	//if list element inside range [t,t+dwell_time]
+                        distance[i] = std::get<1>(curr);
+			t.a = i;
+			t.d = distance[i];
+			q.push(t);
+			reset.push_back(i);
+                	if (backtracking){
+                    	    backtracking_tmp[i] = std::get<0> (curr);
+                	}
+			break;
+		   }else{
+			d_list[i].pop_front();		//remove first element -> not needed anymore
+            	   }
+            }
+        }
+
+	while(!q.empty()){			//dijsktra with priority queue
+		tuples cur = q.top();
+		q.pop();
+		if(distance[cur.a]==cur.d){	//only use element if not found better path in this iteration			
+            	    int length = edge_matrix[cur.a].size();            
+		    for(int i = edge_track[cur.a];i<length;i++){				
+                	Edge e = edge_matrix[cur.a][i];
+			if(e.t==time){
+			    if(e.u >= original_V){
+		            	    if(distance[e.v] > (distance[e.u])){						
+		                	if(distance[e.v] == infinity){
+					   reset.push_back(e.v);	
+					}
+					if(backtracking){
+		                    	   backtracking_tmp[e.v] = time;
+		                	}
+		                	distance[e.v] = distance[e.u];
+					t.a = e.v;
+					t.d = distance[e.v];
+					q.push(t);
+				     }
+			     }else{
+		            	    if(distance[e.v] > (distance[e.u] + e.o)){						
+		                	if(distance[e.v] == infinity){
+					   reset.push_back(e.v);	
+					}
+					if(backtracking){
+		                    	   backtracking_tmp[e.v] = time;
+		                	}
+		                	distance[e.v] = distance[e.u] + e.o;
+					t.a = e.v;
+					t.d = distance[e.v];
+					q.push(t);
+				     }
+			     }
+			     if(e.u >= original_V){
+		                     if (std::get<0>(reached_algo2[e.v]) > distance[e.u]){
+		                        reached_algo2[e.v] = std::make_tuple(distance[e.u], e.u, backtracking_tmp[e.u]);
+		                        nodes.push_back(e.v);
+		                     }
+			     }else{
+		                     if (std::get<0>(reached_algo2[e.v]) > distance[e.u]+ e.o){
+		                        reached_algo2[e.v] = std::make_tuple( distance[e.u]+ e.o, e.u, backtracking_tmp[e.u]);
+		                        nodes.push_back(e.v);
+		                     }
+			     }
+			}else if(e.t>time){	//found node after current timestamp [next iteration]
+				edge_track[cur.a] = i;
+				break;
+                        }
+                   }
+               }
+         }
+
+        // for all reached vertices exactly at time step time
+	for(int i: nodes){		
+		// updat optimality values
+		if ( arr_time[i] != (this->*fptr)(arr_time[i], std::get<0>(reached_algo2[i]), time)){		      
+		    arr_time[i] = (this->*fptr)(arr_time[i], std::get<0>(reached_algo2[i]), time);
+		    backtracking_opt[i] =  std::make_tuple(time, std::get<1>(reached_algo2[i]), std::get<2>(reached_algo2[i]));
+		}
+		// update list of time steps a vertex was reached 
+		if (backtracking){
+		    std::tuple<int,int,int> pre = std::make_tuple(time, std::get<1>(reached_algo2[i]),std::get<2>(reached_algo2[i]));
+		    predecessor[i].push_back(pre);
+		}
+        	std::tuple <int,int> tmp = std::make_tuple(time, std::get<0>(reached_algo2[i]));
+		while(!d_list[i].empty()){            
+		    std::tuple <int,int> curr = d_list[i].back();  		                    
+		    if(std::get<1>(curr) >= std::get<1>(tmp)){
+		       d_list[i].pop_back();
+		    }else{
+		       break;
+		    }		    
+		}
+        	d_list[i].push_back(tmp);		
+		if(f_time[i]==infinity){	//node visited first time -> fill node_list
+                    f_time[i] = time;
+		    int length2 = edge_matrix[i].size();
+		    for(int j=edge_track[i];j<length2;j++){
+                	Edge e2 = edge_matrix[i][j];
+                	if(e2.t>time){
+                    	   if ( node_list[timemap[e2.t]].empty() || node_list[timemap[e2.t]].back() != e2.u ){
+                        	node_list[timemap[e2.t]].push_back(e2.u);
+                    	   }
+                	}else if(e2.t<time){
+                    	   edge_track[i]=j;
+                	}
+            	    }
+        	}		
+		reached_algo2[i] = std::make_tuple (infinity,0,0);
+		distance[i] = infinity;
+	}
+	for(int i: reset){	//reset distance for vertices which werent found but used as E_r vertices
+		distance[i] = infinity;			//reset distance of vertices used by source vertex
+	}
+}
+
 
 #endif
