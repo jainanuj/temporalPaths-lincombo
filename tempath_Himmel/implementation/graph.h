@@ -1084,17 +1084,17 @@ void Graph::print_time(string s){
 }
 
 void Graph::print_earliest(char* algo){
-	cout<<"Arr_time:"<<endl;
+	//cout<<"Arr_time:"<<endl;
 	//added by sanaz:
-	if(!strcmp(algo,"minhop")){ 
+	/*if(!strcmp(algo,"minhop")){ 
 	   for(int i=0;i<original_V;i++){
-	       cout<<(arr_time[i]/2)<<endl;
+	       cout<< (arr_time[i]/2)<<endl;
 	   }
 	   return;
-	}
+	}*/
 	for(int i=0;i<original_V;i++){
         //for(int i=0;i<original_V;i++){
-		cout<<arr_time[i]<<endl;
+		cout<< arr_time[i]<<endl;
 	}
 }
 

@@ -640,8 +640,8 @@ void Graph::fastest(int source)
 	time_sum += t.GetRuntime();
 
 	/*added by sanaz: for debugging only*/
-	//for(int i=0; i<f_time.size(); i++)
- 	  //cout << f_time[i] << endl;
+	for(int i=0; i<f_time.size(); i++)
+ 	  cout << f_time[i] << endl;
 }
 
 

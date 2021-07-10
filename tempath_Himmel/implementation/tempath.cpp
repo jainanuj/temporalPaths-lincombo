@@ -196,11 +196,15 @@ int main(int argc, char* argv[]){
             g.run_algo(strdup(result["algo"].as<std::string>().c_str()), source);
         }
 		//Print opt values if enabled
-		if(result["print"].as<bool>()){
+		/*if(result["print"].as<bool>()){
 			for(int i=0;i<g.original_V;i++){
 				cout<<"i: "<<i<<" opt: "<<g.arr_time[i]<<endl;
 			}
-		}
+		}*/
+
+                //added by sanaz:
+                //cout << "source: " << source << endl;
+                g.print_earliest(strdup(result["algo"].as<std::string>().c_str()));
 
 		//use backtracking from source
 		if(result["backtracking"].as<bool>()){
@@ -266,9 +270,9 @@ int main(int argc, char* argv[]){
 	cout<<","<<endl;*/
 
 	//added by sanaz:
-        cout << "the distances:" << endl;
-        g.print_earliest(strdup(result["algo"].as<std::string>().c_str()));
-	cout << "the average time:" << endl;
+       /* cout << "the distances:" << endl;
+        g.print_earliest(strdup(result["algo"].as<std::string>().c_str()));*/
+	//cout << "the average time:" << endl;
 	g.print_avg_time();
 
 	return 0;
