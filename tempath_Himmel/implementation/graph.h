@@ -630,7 +630,7 @@ void Graph::min_hop_count(int source){
 	for(int time: timestamps){
 		if(time>=arr_time[source]){
 			//printf("Current Time: %d ---- Difference: %d \n",time, time - t );
-			mod_dijkstra_minhop(time, source, counter, &Graph::min_hop_count_function)
+			mod_dijkstra_minhop(time, source, counter, &Graph::min_hop_count_function);
 			node_list[counter].clear();
 		}
 		counter++;
