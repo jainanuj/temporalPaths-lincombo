@@ -193,22 +193,25 @@ bool Graph::cycleRec(vector<bool>& visited, vector<bool>& inStack, int index){
 }
 
 void Graph::topologicalOrder(){
-   int n = vertexList.size();
+   int n = vertexList.size(); //ignore the last dummy node
    vector<bool> visited(n, false);
+   vector<int> orderTmp;
    for(int i=0; i<n; i++){
-	if(!visited[i])
-	   topologicalRec(visited, i);
+        if(!visited[i])
+           topologicalRec(visited, i, orderTmp);
    }
+  for(int i=n-1; i>=0; i-- )
+     tpOrdered.push_back(orderTmp[i]);
 }
 
-void Graph::topologicalRec(vector<bool>& visited, int index){
+void Graph::topologicalRec(vector<bool>& visited, int index, vector<int>& orderTmp){
    visited[index] = true;
    for(int i=0; i<vertexList[index].adjList.size(); i++){
-	int neigh = vertexList[index].adjList[i].first;
-	if(!visited[neigh])
-	   topologicalRec(visited, neigh);
+      int neigh = vertexList[index].adjList[i].first;
+      if(!visited[neigh])
+         topologicalRec(visited, neigh, orderTmp);
    }
-   tpOrdered.insert(tpOrdered.begin(), index);
+   orderTmp.push_back(index);
 }
 
 void Graph::print_adjList(){  
@@ -588,8 +591,8 @@ void Graph::minhop(int source)
     time_sum += t.GetRuntime();
 
     /*for debugging only*/
-    for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl;
+    /*for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;*/
 }
 
 void Graph::minhop_acyclic(int source){
@@ -624,8 +627,8 @@ void Graph::minhop_acyclic(int source){
     time_sum += t.GetRuntime();
 
     /*for debugging only*/
-    for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl;
+    /*for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;*/
 }
 
 //--------------//

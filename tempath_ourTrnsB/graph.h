@@ -77,7 +77,7 @@ public:
     bool cycleDetector();
     bool cycleRec(vector<bool>& visited, vector<bool>& inStack, int index); //recursive function to find the cycles
     void topologicalOrder();
-    void topologicalRec(vector<bool>& visited, int i); //the recursive function called inside topologicalOrder()
+    void topologicalRec(vector<bool>& visited, int i, vector<int>& orderTmp); //the recursive function called inside topologicalOrder()
     //--------------
     void initial_query(const char* filePath, int numS); // query file, numS argument added by sanaz
     void initial_query(int numS); //numS argument added by sanaz

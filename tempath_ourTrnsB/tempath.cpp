@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
     bool hasZeroW = g.transform();
     bool isCyclic = false;
     if(hasZeroW)
-       isCyclic = g.cycleDetector();     
+       isCyclic = g.cycleDetector();   
     if(!isCyclic){
 	g.topologicalOrder();
     }

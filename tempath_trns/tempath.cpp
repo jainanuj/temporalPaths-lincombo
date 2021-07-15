@@ -20,9 +20,11 @@ int main(int argc, char* argv[]){
     //added by sanaz:
     //g.dominatedRemoval();
     bool hasZeroW = g.transform();
+    cout << "hasZeroW: " << hasZeroW << endl;
     bool isCyclic = false;
     if(hasZeroW)
-       isCyclic = g.cycleDetector();    
+       isCyclic = g.cycleDetector(); 
+    cout << "after cycle detection" << endl;   
     if(!isCyclic){
 	g.topologicalOrder();
     }
