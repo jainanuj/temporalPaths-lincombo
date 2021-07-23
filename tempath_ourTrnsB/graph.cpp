@@ -157,8 +157,13 @@ void Graph::topologicalOrder(){
 	if(!visited[i])
 	   topologicalRec(visited, i, orderTmp);
    }
-  for(int i=n-1; i>=0; i-- )
+  tpStart.resize(n, -1); //modified version
+  for(int i=n-1; i>=0; i-- ){
      tpOrdered.push_back(orderTmp[i]);
+     int u = vertexList[orderTmp[i]].u;
+     if(tpStart[u] == -1)
+	tpStart[u] = tpOrdered.size()-1;
+  }
 }
 
 void Graph::topologicalRec(vector<bool>& visited, int index, vector<int>& orderTmp){
@@ -608,32 +613,37 @@ void Graph::minhop_acyclic(int source){
 	   localDist[it] = 0;
     }
     
-    for(int i=0; i<tpOrdered.size(); i++){
+    for(int i=tpStart[source]; i<tpOrdered.size(); i++){
 	int index = tpOrdered[i];
+	if(vertexList[index].t > t_end || localDist[index] == infinity) //the modified version
+	   continue;	
 	int u = vertexList[index].u;
+	distances[u] = min(distances[u], localDist[index]); //the modified version
 	//first, take care of the next chain neighbor
-	if(index+1 < voutStart[u+1])
+	if(index+1 < voutStart[u+1] && vertexList[index+1].t <= t_end)
 	   localDist[index+1] = min(localDist[index+1], localDist[index]);
 	//now, take care of the other neighbors
 	for(int j=0; j<vertexList[index].adjList.size(); j++){
 	   int neigh = vertexList[index].adjList[j].first;
+	   if(vertexList[neigh].t > t_end)
+		continue;
 	   localDist[neigh] = min(localDist[index]+1, localDist[neigh]);
 	}	   
     }
 
     /*use localDist to compute distances*/
-    for(int i=0; i<vertexList.size()-1; i++) //ignore the dummy node
-	if(vertexList[i].t >= t_start && vertexList[i].t <= t_end){
-	   int u = vertexList[i].u; 
-	   distances[u] = min(distances[u], localDist[i]);
-	}
+    //for(int i=0; i<vertexList.size()-1; i++) //ingore the dummy node
+	//if(vertexList[i].t >= t_start && vertexList[i].t <= t_end){
+	  // int u = vertexList[i].u; 
+	   //distances[u] = min(distances[u], localDist[i]);
+	//}
 
     t.stop();
     time_sum += t.GetRuntime();
 
     /*for debugging only*/
-    /*for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl;*/
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;
 }
 //--------------//
 

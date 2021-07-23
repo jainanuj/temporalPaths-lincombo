@@ -200,8 +200,13 @@ void Graph::topologicalOrder(){
         if(!visited[i])
            topologicalRec(visited, i, orderTmp);
    }
-  for(int i=n-1; i>=0; i-- )
+  tpStart.resize(n, -1); //modified version
+  for(int i=n-1; i>=0; i-- ){
      tpOrdered.push_back(orderTmp[i]);
+     int u = vertexList[orderTmp[i]].u;
+     if(tpStart[u] == -1)
+	tpStart[u] = tpOrdered.size()-1;     
+  }
 }
 
 void Graph::topologicalRec(vector<bool>& visited, int index, vector<int>& orderTmp){
@@ -606,10 +611,16 @@ void Graph::minhop_acyclic(int source){
     }
 
     /*process the nodes in topological order*/
-    for(int i=0; i<vertexList.size(); i++){
+    for(int i=tpStart[source]; i<vertexList.size(); i++){
 	int index = tpOrdered[i];
+	if(vertexList[index].t > t_end || localDist[index] == infinity)
+	   continue;
+	int u = vertexList[index].u;
+	distances[u] = min(distances[u], localDist[index]);
   	for(int j=0; j<vertexList[index].adjList.size(); j++){
 	    int neigh = vertexList[index].adjList[j].first;
+	    if(vertexList[neigh].t > t_end)
+		continue;
 	    int linkW = (vertexList[index].adjList[j].second == 0)? 0 : 1;
 	    if(localDist[neigh] > localDist[index] + linkW)
 		localDist[neigh] = localDist[index] + linkW;
@@ -617,18 +628,18 @@ void Graph::minhop_acyclic(int source){
     }
 
     /*use localDist to compute distances*/
-    for(int i=0; i<vertexList.size(); i++)
+    /*for(int i=0; i<vertexList.size(); i++)
 	if(vertexList[i].isVin && vertexList[i].t >= t_start && vertexList[i].t <= t_end){
 	   int u = vertexList[i].u; 
 	   distances[u] = min(distances[u], localDist[i]);
-	}
+	}*/
 
     t.stop();
     time_sum += t.GetRuntime();
 
     /*for debugging only*/
-    /*for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl;*/
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;
 }
 
 //--------------//

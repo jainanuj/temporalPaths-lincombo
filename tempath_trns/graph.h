@@ -118,6 +118,7 @@ public:
     vector<TTYPE> distances; 
     vector<vector<int>> rev_adjList; //adjacency list with reversed edges used in "latest" function
     vector<int> tpOrdered; //keeps the (transformed) indices of the nodes in topological order
+    vector<int> tpStart; //used for the modified version of acyclic minhop - topological order
     //--------------
 };
 
