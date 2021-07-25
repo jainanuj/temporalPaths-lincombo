@@ -462,7 +462,7 @@ void Graph::fastest(int source)
 }
 //-----------------
 
-void Graph::run_shortest()
+void Graph::run_shortest(bool isCyclic)
 {
     time_sum=0;
 	
@@ -472,7 +472,10 @@ void Graph::run_shortest()
 	for(int j=0; j<V; j++)
 	  distances[j] = infinity; 
 	distances[sources[i]] = 0; 
-    	shortest(sources[i]);
+	if(isCyclic)
+    	   shortest(sources[i]);
+	else
+	   shortest_acyclic(sources[i]);
     }
     
     print_avg_time();
@@ -528,6 +531,43 @@ void Graph::shortest(int source)
 	cout << distances[i] << endl; 
 
 }
+
+//added by sanaz
+void Graph::shortest_acyclic(int source){
+    Timer t;
+    t.start();
+
+    vector<TTYPE> localDist(vertexList.size(), infinity);
+    for(int it = voutStart[source]; it < vinStart[source+1]; it++){
+	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end)
+	   localDist[it] = 0;
+    }
+
+    /*process the nodes in topological order*/
+    for(int i=tpStart[source]; i<vertexList.size(); i++){
+	int index = tpOrdered[i];
+	if(vertexList[index].t > t_end || localDist[index] == infinity)
+	   continue;
+	int u = vertexList[index].u;
+	distances[u] = min(distances[u], localDist[index]);
+  	for(int j=0; j<vertexList[index].adjList.size(); j++){
+	    int neigh = vertexList[index].adjList[j].first;
+	    if(vertexList[neigh].t > t_end)
+		continue;
+	    int linkW = vertexList[index].adjList[j].second;
+	    if(localDist[neigh] > localDist[index] + linkW)
+		localDist[neigh] = localDist[index] + linkW;
+	}
+    }
+
+    t.stop();
+    time_sum += t.GetRuntime();
+
+    /*for debugging only*/
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;
+}
+
 
 //added by sanaz//
 void Graph::run_minhop(bool isCyclic)
@@ -626,13 +666,6 @@ void Graph::minhop_acyclic(int source){
 		localDist[neigh] = localDist[index] + linkW;
 	}
     }
-
-    /*use localDist to compute distances*/
-    /*for(int i=0; i<vertexList.size(); i++)
-	if(vertexList[i].isVin && vertexList[i].t >= t_start && vertexList[i].t <= t_end){
-	   int u = vertexList[i].u; 
-	   distances[u] = min(distances[u], localDist[i]);
-	}*/
 
     t.stop();
     time_sum += t.GetRuntime();

@@ -435,7 +435,7 @@ void Graph::fastest(int source)
 }
 //-----------------
 
-/*void Graph::run_shortest()
+void Graph::run_shortest()
 {
     time_sum=0;
 	
@@ -450,9 +450,9 @@ void Graph::fastest(int source)
     
     print_avg_time();
 
-}*/
+}
 
-/*void Graph::shortest(int source)
+void Graph::shortest(int source)
 {
     Timer t;
     t.start();
@@ -462,35 +462,37 @@ void Graph::fastest(int source)
     priority_queue< iPair, vector <iPair> , greater<iPair> > pq; //pairs of <distance, id> sorted in increasing order of distance
     vector<int> local_dist(vertexList.size(), infinity); //distance vector for the nodes in the transformed graph
     vector<bool> done(vertexList.size(), false); //keeping track of the nodes whose distance is established
+    vector<TTYPE> firstDone(vertexList.size(), infinity); //the time stamp of the last chain neighbor that has become Done
     
-    for(int it=vinStart[source]; it < vinStart[source+1]; it++){
-        pq.push(make_pair(0, it));
-	local_dist[it] = 0; 
-    }
+    for(int it=voutStart[source]; it < voutStart[source+1]; it++)
+	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end){
+	   pq.push(make_pair(0, it));
+	   local_dist[it] = 0; 
+	   break;
+    	}
 
     while(!pq.empty()){
 	int node = pq.top().second; 
 	pq.pop(); 
 	if(done[node]) 
-	   continue; 
-	done[node] = true; 
-	for(auto neigh=vertexList[node].adjList.begin(); neigh!=vertexList[node].adjList.end(); neigh++){
-	   //TO BE OPTIMIZED
-	   //Vin[source] need not be in range, but the exit times should be
-	   int exitTime = vertexList[neigh->first].t - neigh->second;
-	   if(exitTime < t_start || exitTime > t_end)
-		continue;
-	   //UP TO HERE
-	   int neiID = neigh->first;  
-	   //vertexList[neiID].t represents "in time" of a Vin node
-	   if(!done[neiID] && vertexList[neiID].t >= t_start && vertexList[neiID].t <= t_end){
-		int newDist = local_dist[node]+neigh->second;
-		if(newDist < local_dist[neiID]){
-		   local_dist[neiID] = newDist; 
-		   pq.push(make_pair(newDist, neiID));  
+	   continue;  
+        //first go through all its chain neighbors upto firstDone[node]
+	int u = vertexList[node].u;
+        for(int cNeigh = node; cNeigh < voutStart[u+1] && vertexList[cNeigh].t < firstDone[u] && vertexList[cNeigh].t <= t_end; cNeigh++){
+	    //we also include the node itself to avoid redundant loops 
+	    local_dist[cNeigh] = local_dist[node];
+	    done[cNeigh] = true;
+	    //now go through their neighbors:
+	    for(auto neigh=vertexList[cNeigh].adjList.begin(); neigh!=vertexList[cNeigh].adjList.end(); neigh++){
+		int neiID = neigh->first;
+		int linkW = neigh->second;
+		if(vertexList[neiID].t <= t_end && local_dist[node]+linkW < local_dist[neiID]){
+		    local_dist[neiID] = local_dist[node]+linkW;
+		    pq.push(make_pair(local_dist[neiID], neiID));
 		}
-	   }
-  	}
+	    }
+	}
+	firstDone[u] = vertexList[node].t;
     }
 
     for(int i=0; i<vertexList.size(); i++)
@@ -506,7 +508,7 @@ void Graph::fastest(int source)
     for(int i=0; i<distances.size(); i++)
 	cout << distances[i] << endl; 
 
-}*/
+}
 
 //added by sanaz//
 void Graph::run_minhop(bool isCyclic)
