@@ -86,15 +86,16 @@ public:
     void run_latest_departure(); 
     void latest_departure(int source);*/
     void run_fastest(); 
-    void fastest(int source);
-    /*void run_shortest(); 
-    void shortest(int source);*/
+    void fastest(int source); 
+    void shortest(int source);
     void print_avg_time();
     
     //added by sanaz:
     void run_minhop(bool isCyclic);
     void minhop(int source);
     void minhop_acyclic(int source);
+    void run_shortest(bool isCyclic);
+    void shortest_acyclic(int source);
 
 public:
     vector< Edge > edge_list;

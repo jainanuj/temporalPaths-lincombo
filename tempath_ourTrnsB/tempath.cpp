@@ -52,12 +52,11 @@ int main(int argc, char* argv[]){
     }
     else if (!strcmp(option,"shortest"))
     {
-	cout << "disactivated for now!" << endl;	
-        //g.run_shortest();
+	g.run_shortest(isCyclic);
     }
     else if(!strcmp(option,"fastest"))
     {
-		g.run_fastest();
+	g.run_fastest();
     }
     else if(!strcmp(option,"minhop")) //added by sanaz
     {
