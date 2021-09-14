@@ -508,8 +508,8 @@ void Graph::shortest(int source)
     time_sum += t.GetRuntime();
 
     //for debugging only
-    for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl; 
+    /*for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;*/ 
 
 }
 
@@ -547,8 +547,8 @@ void Graph::shortest_acyclic(int source){
     time_sum += t.GetRuntime();
 
     /*for debugging only*/
-    for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl;
+    /*for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;*/
 }
 
 //added by sanaz//

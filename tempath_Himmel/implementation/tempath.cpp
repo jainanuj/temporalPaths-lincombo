@@ -268,10 +268,7 @@ int main(int argc, char* argv[]){
 	}
 	cout<<","<<endl;*/
 
-	//added by sanaz:
-       /* cout << "the distances:" << endl;
-        g.print_earliest(strdup(result["algo"].as<std::string>().c_str()));*/
-	//cout << "the average time:" << endl;
+	//print the average runtime 
 	g.print_avg_time();
 
 	return 0;
