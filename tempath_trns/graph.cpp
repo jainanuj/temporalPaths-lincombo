@@ -402,18 +402,19 @@ void Graph::latest_departure(int source)
 
 }
 
-void Graph::run_fastest()
+void Graph::run_fastest(bool isCyclic)
 {
 	time_sum=0;
 	
 	for(int i = 0 ;i < sources.size() ;i ++)
     { 
-    	//modified by sanaz:
-	for(int j=0; j<V; j++)
+    	for(int j=0; j<V; j++)
 	  distances[j] = infinity; 
 	distances[sources[i]] = 0; 
-	//------------------
-    	fastest(sources[i]);
+	if(isCyclic)
+    	  fastest(sources[i]);
+	else
+	  fastest_acyclic(sources[i]);
     }
     
     print_avg_time();
@@ -460,6 +461,53 @@ void Graph::fastest(int source)
        	cout << distances[i] << endl; 
 
 }
+
+//added by sanaz
+void Graph::fastest_acyclic(int source){
+    Timer t;
+    t.start();
+
+    //latest(u,t) is latest departure time from s to exit from (u,t)
+    vector<TTYPE> latest(vertexList.size(), -1);
+    for(int it = voutStart[source]; it < vinStart[source+1]; it++){
+	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end)
+	   latest[it] = vertexList[it].t;
+    }
+
+    vector<TTYPE> localDist(vertexList.size(), infinity);
+    for(int it = voutStart[source]; it < vinStart[source+1]; it++){
+	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end)
+	   localDist[it] = 0;
+    }
+
+    /*process the nodes in topological order*/
+    for(int i=tpStart[source]; i<vertexList.size(); i++){
+	int index = tpOrdered[i];
+	if(localDist[index] == infinity)
+	   continue; 
+	int u = vertexList[index].u;
+	distances[u] = min(distances[u], localDist[index]);
+  	for(int j=0; j<vertexList[index].adjList.size(); j++){
+	    int neigh = vertexList[index].adjList[j].first;
+	    int linkW = vertexList[index].adjList[j].second;
+	    TTYPE arrivalTime = vertexList[index].t + linkW;
+	    if(arrivalTime > t_end)
+		continue; //up to here	    
+	    if(localDist[neigh] > arrivalTime-latest[index])
+		localDist[neigh] = arrivalTime-latest[index];
+	    if(latest[neigh] < latest[index])
+		latest[neigh] = latest[index];
+	}
+    }
+
+    t.stop();
+    time_sum += t.GetRuntime();
+
+    /*for debugging only*/
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;
+}
+
 //-----------------
 
 void Graph::run_shortest(bool isCyclic)
@@ -546,15 +594,16 @@ void Graph::shortest_acyclic(int source){
     /*process the nodes in topological order*/
     for(int i=tpStart[source]; i<vertexList.size(); i++){
 	int index = tpOrdered[i];
-	if(vertexList[index].t > t_end || localDist[index] == infinity)
+	if(localDist[index] == infinity)
 	   continue;
 	int u = vertexList[index].u;
 	distances[u] = min(distances[u], localDist[index]);
   	for(int j=0; j<vertexList[index].adjList.size(); j++){
 	    int neigh = vertexList[index].adjList[j].first;
-	    if(vertexList[neigh].t > t_end)
-		continue;
 	    int linkW = vertexList[index].adjList[j].second;
+	    TTYPE arrivalTime = vertexList[index].t + linkW;
+	    if(arrivalTime > t_end)
+		continue;
 	    if(localDist[neigh] > localDist[index] + linkW)
 		localDist[neigh] = localDist[index] + linkW;
 	}
@@ -653,15 +702,17 @@ void Graph::minhop_acyclic(int source){
     /*process the nodes in topological order*/
     for(int i=tpStart[source]; i<vertexList.size(); i++){
 	int index = tpOrdered[i];
-	if(vertexList[index].t > t_end || localDist[index] == infinity)
+	if(localDist[index] == infinity)
 	   continue;
 	int u = vertexList[index].u;
 	distances[u] = min(distances[u], localDist[index]);
   	for(int j=0; j<vertexList[index].adjList.size(); j++){
 	    int neigh = vertexList[index].adjList[j].first;
-	    if(vertexList[neigh].t > t_end)
+            int wTmp = vertexList[index].adjList[j].second;
+	    TTYPE arrivalTime = vertexList[index].t + wTmp;
+	    if(arrivalTime > t_end)
 		continue;
-	    int linkW = (vertexList[index].adjList[j].second == 0)? 0 : 1;
+	    int linkW = (wTmp == 0)? 0 : 1;
 	    if(localDist[neigh] > localDist[index] + linkW)
 		localDist[neigh] = localDist[index] + linkW;
 	}

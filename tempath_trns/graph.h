@@ -89,8 +89,7 @@ public:
     void run_earliest_arrival(); 
     void earliest_arrival(int source);
     void run_latest_departure(); 
-    void latest_departure(int source);
-    void run_fastest(); 
+    void latest_departure(int source); 
     void fastest(int source);
     //void run_shortest(); 
     void shortest(int source);
@@ -101,7 +100,9 @@ public:
     void minhop(int source);
     void minhop_acyclic(int source);
     void run_shortest(bool isCyclic);
-    void shortest_acyclic(int source);
+    void shortest_acyclic(int source);    
+    void run_fastest(bool isCyclic);
+    void fastest_acyclic(int source);
 
 public:
     vector< Edge > edge_list;
