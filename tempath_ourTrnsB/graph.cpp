@@ -363,18 +363,19 @@ void Graph::initial_query(const char* filePath, int numS)
         cout << distances[i] << endl;
 }*/
 
-void Graph::run_fastest()
+void Graph::run_fastest(bool isCyclic)
 {
 	time_sum=0;
 	
 	for(int i = 0 ;i < sources.size() ;i ++)
     { 
-    	//modified by sanaz:
-	for(int j=0; j<V; j++)
+    	for(int j=0; j<V; j++)
 	  distances[j] = infinity; 
-	distances[sources[i]] = 0; 
-	//------------------
-    	fastest(sources[i]);
+	distances[sources[i]] = 0;
+	if(isCyclic)
+    	   fastest(sources[i]);
+	else
+	   fastest_acyclic(sources[i]);
     }
     
     print_avg_time();
@@ -430,6 +431,56 @@ void Graph::fastest(int source)
     time_sum += t.GetRuntime();
 
     //for debugging only
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;
+}
+
+void Graph::fastest_acyclic(int source){
+    Timer t;
+    t.start();
+
+    //latest(u,t) is latest departure time from s to exit from (u,t)
+    vector<TTYPE> latest(vertexList.size(), -1);
+    for(int it = voutStart[source]; it < voutStart[source+1]; it++){
+	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end)
+	   latest[it] = vertexList[it].t;
+    }
+
+    vector<TTYPE> localDist(vertexList.size(), infinity);
+    for(int it = voutStart[source]; it < voutStart[source+1]; it++){
+	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end)
+	   localDist[it] = 0;
+    }
+    
+    for(int i=tpStart[source]; i<tpOrdered.size(); i++){
+	int index = tpOrdered[i];
+	if(localDist[index] == infinity) //the modified version
+	   continue;	
+	int u = vertexList[index].u;
+	distances[u] = min(distances[u], localDist[index]); 
+	//first, take care of the next chain neighbor
+	if(index+1 < voutStart[u+1] && vertexList[index+1].t <= t_end && latest[index+1] < latest[index]){
+	    latest[index+1] = latest[index];
+	    localDist[index+1] = min(localDist[index+1], localDist[index]);
+	}
+	//now, take care of the other neighbors
+	for(int j=0; j<vertexList[index].adjList.size(); j++){
+	    int neigh = vertexList[index].adjList[j].first;
+	    int linkW = vertexList[index].adjList[j].second;
+	    TTYPE arrivalTime = vertexList[index].t + linkW;
+	    if(arrivalTime > t_end)
+		continue; 	    
+	    if(localDist[neigh] > arrivalTime-latest[index])
+		localDist[neigh] = arrivalTime-latest[index];
+	    if(latest[neigh] < latest[index])
+		latest[neigh] = latest[index];
+	}	   
+    }
+
+    t.stop();
+    time_sum += t.GetRuntime();
+
+    /*for debugging only*/
     for(int i=0; i<distances.size(); i++)
 	cout << distances[i] << endl;
 }
@@ -537,7 +588,7 @@ void Graph::shortest_acyclic(int source){
 	for(int j=0; j<vertexList[index].adjList.size(); j++){
 	   int neigh = vertexList[index].adjList[j].first;
 	   int linkW = vertexList[index].adjList[j].second;
-	   if(vertexList[neigh].t > t_end)
+	   if(vertexList[neigh].t + linkW > t_end)
 		continue;
 	   localDist[neigh] = min(localDist[index]+linkW, localDist[neigh]);
 	}	   
@@ -668,7 +719,8 @@ void Graph::minhop_acyclic(int source){
 	//now, take care of the other neighbors
 	for(int j=0; j<vertexList[index].adjList.size(); j++){
 	   int neigh = vertexList[index].adjList[j].first;
-	   if(vertexList[neigh].t > t_end)
+	   TTYPE arrivalTime = vertexList[neigh].t + vertexList[index].adjList[j].second;
+	   if(arrivalTime > t_end)
 		continue;
 	   localDist[neigh] = min(localDist[index]+1, localDist[neigh]);
 	}	   

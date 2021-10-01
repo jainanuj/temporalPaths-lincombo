@@ -56,7 +56,7 @@ int main(int argc, char* argv[]){
     }
     else if(!strcmp(option,"fastest"))
     {
-	g.run_fastest();
+	g.run_fastest(isCyclic);
     }
     else if(!strcmp(option,"minhop")) //added by sanaz
     {

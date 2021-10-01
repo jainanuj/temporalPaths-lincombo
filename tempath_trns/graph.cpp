@@ -491,8 +491,8 @@ void Graph::fastest_acyclic(int source){
 	    int neigh = vertexList[index].adjList[j].first;
 	    int linkW = vertexList[index].adjList[j].second;
 	    TTYPE arrivalTime = vertexList[index].t + linkW;
-	    if(arrivalTime > t_end)
-		continue; //up to here	    
+	    if(vertexList[index].t > t_end)
+		continue; 	    
 	    if(localDist[neigh] > arrivalTime-latest[index])
 		localDist[neigh] = arrivalTime-latest[index];
 	    if(latest[neigh] < latest[index])
@@ -601,8 +601,7 @@ void Graph::shortest_acyclic(int source){
   	for(int j=0; j<vertexList[index].adjList.size(); j++){
 	    int neigh = vertexList[index].adjList[j].first;
 	    int linkW = vertexList[index].adjList[j].second;
-	    TTYPE arrivalTime = vertexList[index].t + linkW;
-	    if(arrivalTime > t_end)
+	    if(vertexList[index].t > t_end)
 		continue;
 	    if(localDist[neigh] > localDist[index] + linkW)
 		localDist[neigh] = localDist[index] + linkW;
@@ -708,11 +707,9 @@ void Graph::minhop_acyclic(int source){
 	distances[u] = min(distances[u], localDist[index]);
   	for(int j=0; j<vertexList[index].adjList.size(); j++){
 	    int neigh = vertexList[index].adjList[j].first;
-            int wTmp = vertexList[index].adjList[j].second;
-	    TTYPE arrivalTime = vertexList[index].t + wTmp;
-	    if(arrivalTime > t_end)
+	    if(vertexList[index].t > t_end)
 		continue;
-	    int linkW = (wTmp == 0)? 0 : 1;
+	    int linkW = (vertexList[index].adjList[j].second == 0)? 0 : 1;
 	    if(localDist[neigh] > localDist[index] + linkW)
 		localDist[neigh] = localDist[index] + linkW;
 	}
