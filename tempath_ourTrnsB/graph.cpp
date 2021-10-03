@@ -237,18 +237,19 @@ void Graph::initial_query(const char* filePath, int numS)
 
 }
 
-void Graph::run_earliest_arrival()
+void Graph::run_earliest_arrival(bool isCyclic)
 {
 	time_sum=0;
 	
 	for(int i = 0 ;i < sources.size(); i ++)
     { 
-    	//modified by sanaz:
-	for(int j=0; j<V; j++)
+    	for(int j=0; j<V; j++)
 	  distances[j] = infinity; 
-	distances[sources[i]] = t_start; 
-	//------------------
-    	earliest_arrival(sources[i]);
+	distances[sources[i]] = t_start;
+	if(isCyclic)
+    	   earliest_arrival(sources[i]);
+	else
+	   earliest_acyclic(sources[i]);
     }
 	
 	print_avg_time();
@@ -300,6 +301,42 @@ void Graph::earliest_arrival(int source)
     for(int i=0; i<distances.size(); i++)
         cout << distances[i] << endl;
 }
+
+void Graph::earliest_acyclic(int source){
+    Timer t;
+    t.start();
+
+    vector<TTYPE> localDist(vertexList.size(), infinity);
+    for(int it = voutStart[source]; it < voutStart[source+1]; it++){
+	if(vertexList[it].t >= t_start && vertexList[it].t <= t_end)
+	   localDist[it] = 0;
+    }
+    
+    for(int i=tpStart[source]; i<tpOrdered.size(); i++){
+	int index = tpOrdered[i];
+	if(vertexList[index].t == infinity) //the modified version
+	   continue;	
+	int u = vertexList[index].u;
+	distances[u] = min(distances[u], localDist[index]); 
+	for(int j=0; j<vertexList[index].adjList.size(); j++){
+	    int neigh = vertexList[index].adjList[j].first;
+	    int linkW = vertexList[index].adjList[j].second;
+	    TTYPE arrivalTime = vertexList[index].t + linkW;
+	    if(arrivalTime > t_end)
+		continue; 	    
+	    if(localDist[neigh] > arrivalTime)
+		localDist[neigh] = arrivalTime;
+	}	   
+    }
+
+    t.stop();
+    time_sum += t.GetRuntime();
+
+    /*for debugging only*/
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;
+}
+
 //-----------------
 
 /*void Graph::run_latest_departure()

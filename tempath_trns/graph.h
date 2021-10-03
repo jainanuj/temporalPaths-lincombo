@@ -85,8 +85,7 @@ public:
     /*void initial_ds_ea();
     void initial_ds_ld();
     void initial_ds_f();
-    void initial_ds_s();*/
-    void run_earliest_arrival(); 
+    void initial_ds_s();*/ 
     void earliest_arrival(int source);
     void run_latest_departure(); 
     void latest_departure(int source); 
@@ -103,6 +102,8 @@ public:
     void shortest_acyclic(int source);    
     void run_fastest(bool isCyclic);
     void fastest_acyclic(int source);
+    void run_earliest_arrival(bool isCyclic);
+    void earliest_acyclic(int source);
 
 public:
     vector< Edge > edge_list;

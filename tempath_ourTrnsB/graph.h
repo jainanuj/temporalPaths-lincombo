@@ -80,8 +80,7 @@ public:
     void topologicalRec(vector<bool>& visited, int i, vector<int>& orderTmp); //the recursive function called inside topologicalOrder()
     //--------------
     void initial_query(const char* filePath, int numS); // query file, numS argument added by sanaz
-    void initial_query(int numS); //numS argument added by sanaz
-    void run_earliest_arrival(); 
+    void initial_query(int numS); //numS argument added by sanaz 
     void earliest_arrival(int source);
     /*void run_latest_departure(); 
     void latest_departure(int source);*/ 
@@ -97,6 +96,8 @@ public:
     void shortest_acyclic(int source);
     void run_fastest(bool isCyclic);
     void fastest_acyclic(int source);
+    void run_earliest_arrival(bool isCyclic);    
+    void earliest_acyclic(int source);
 
 public:
     vector< Edge > edge_list;
