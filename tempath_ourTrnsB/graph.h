@@ -81,9 +81,9 @@ public:
     //--------------
     void initial_query(const char* filePath, int numS); // query file, numS argument added by sanaz
     void initial_query(int numS); //numS argument added by sanaz
-    /*void run_earliest_arrival(); 
+    void run_earliest_arrival(); 
     void earliest_arrival(int source);
-    void run_latest_departure(); 
+    /*void run_latest_departure(); 
     void latest_departure(int source);*/ 
     void fastest(int source); 
     void shortest(int source);

@@ -42,8 +42,7 @@ int main(int argc, char* argv[]){
 
     if(!strcmp(option,"earliest"))
     {
-	cout << "disactivated for now!" << endl;	
-        //g.run_earliest_arrival();
+	g.run_earliest_arrival();
     }
     else if (!strcmp(option,"latest"))
     {

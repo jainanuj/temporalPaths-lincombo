@@ -237,7 +237,7 @@ void Graph::initial_query(const char* filePath, int numS)
 
 }
 
-/*void Graph::run_earliest_arrival()
+void Graph::run_earliest_arrival()
 {
 	time_sum=0;
 	
@@ -252,10 +252,10 @@ void Graph::initial_query(const char* filePath, int numS)
     }
 	
 	print_avg_time();
-}*/
+}
 
 //modified by sanaz
-/*void Graph::earliest_arrival(int source)
+void Graph::earliest_arrival(int source)
 {
     Timer t;
     t.start();
@@ -265,29 +265,31 @@ void Graph::initial_query(const char* filePath, int numS)
     queue<int> Q; 
 
     //initializing Q
-    for(int i=vinStart[source]; i<vinStart[source+1]; i++){
-	Q.push(i);
+    for(int i=voutStart[source]; i<voutStart[source+1]; i++){
+        if(vertexList[i].t >= t_start && vertexList[i].t <= t_end)
+	   Q.push(i);
     }
 
     while(!Q.empty()){
 	int node = Q.front(); 
 	Q.pop();
 	for(auto neighbor=vertexList[node].adjList.begin(); neighbor!=vertexList[node].adjList.end(); neighbor++){
-	    //TO BE OPTIMIZED
-	    //the time we enter the "source node" doesn't matter, but the time we exit it does
-	    int exitTime = vertexList[neighbor->first].t - neighbor->second;
-	    if(exitTime < t_start || exitTime > t_end)
+	    int nID = neighbor->first;
+	    int arrivalTime = vertexList[node].t + neighbor->second;
+	    if(arrivalTime > t_end) 
 		continue;
-	    //UP TO HERE
-	    int nID = neighbor->first; 
 	    Node neiNode = vertexList[nID];
-	    if(!visited[nID] && neiNode.t >= t_start && neiNode.t <= t_end){
+	    distances[neiNode.u] = min(distances[neiNode.u], arrivalTime);
+	    if(!visited[nID] && neiNode.t <= t_end){
 		visited[nID] = true;
 		Q.push(nID);
-		if(neiNode.t < distances[neiNode.u]){
-		   distances[neiNode.u] = neiNode.t; 
-		}
-	    }
+	    }  
+	}
+	//modification so that the chain neighbors are also expanded
+	int uID = vertexList[node].u;
+	if(node+1 < voutStart[uID+1] && !visited[node+1]){
+	    visited[node+1] = true;
+	    Q.push(node+1);
 	}
     }
 	
@@ -297,7 +299,7 @@ void Graph::initial_query(const char* filePath, int numS)
     //for debugging only
     for(int i=0; i<distances.size(); i++)
         cout << distances[i] << endl;
-}*/
+}
 //-----------------
 
 /*void Graph::run_latest_departure()
