@@ -358,7 +358,7 @@ void Graph::earliest_acyclic(int source){
     /*process the nodes in topological order*/
     for(int i=tpStart[source]; i<vertexList.size(); i++){
 	int index = tpOrdered[i];
-	if(localDist[index] == infinity)
+	if(localDist[index] == infinity || vertexList[index].t > t_end)
 	   continue; 
 	int u = vertexList[index].u;
 	distances[u] = min(distances[u], localDist[index]);

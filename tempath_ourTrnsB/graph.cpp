@@ -314,10 +314,13 @@ void Graph::earliest_acyclic(int source){
     
     for(int i=tpStart[source]; i<tpOrdered.size(); i++){
 	int index = tpOrdered[i];
-	if(vertexList[index].t == infinity) //the modified version
+	if(localDist[index] == infinity || vertexList[index].t > t_end) //should not expand the non-visited nodes
 	   continue;	
 	int u = vertexList[index].u;
 	distances[u] = min(distances[u], localDist[index]); 
+	//first check the next chain neighbor, then the other neighbors
+	if(index+1 < voutStart[u+1])
+	   localDist[index+1] = min(localDist[index], localDist[index+1]);
 	for(int j=0; j<vertexList[index].adjList.size(); j++){
 	    int neigh = vertexList[index].adjList[j].first;
 	    int linkW = vertexList[index].adjList[j].second;
