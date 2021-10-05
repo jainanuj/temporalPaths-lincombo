@@ -16,6 +16,11 @@ int main(int argc, char* argv[]){
 	
     char* option = argv[1];	
     Graph g(argv[2]);
+
+    //added by sanaz
+    //currently only this functionality is needed
+    g.Zchoche_Node_Vertex_Count();
+    return 0;
     
     //added by sanaz:
     g.dominatedRemoval();

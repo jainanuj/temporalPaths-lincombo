@@ -1,3 +1,6 @@
+*****************************************************************************************************************
+**This folder is no more useful. The only purpose is to measure the number of nodes and vertices in TRG_Zchoche**
+*****************************************************************************************************************
 1. The input format for the temporal graph G: (1) the first line consists of two integers, "n" and "M", the first integer "n" is the number of vertices in G, the second integer "M" is the number of edges in G; (2) "M" lines are followed, each line denotes one temporal edge and consisits of four integers in the format "u v t lambda". The "M" lines are sorted in the order of their starting time, that is, in the ascending order of "t"; (3) the vertex IDs are ordered from 0 to n-1. 
 
 example.txt

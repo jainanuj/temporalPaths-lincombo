@@ -73,35 +73,17 @@ public:
     void transform(); 
     void print_adjList(); //used for debugging
     void dominatedRemoval(); //to remove the dominant edges from the edge list
+    void Zchoche_Node_Vertex_Count();//used to count number of nodes and vertices in TRG_Zchoche
     //--------------
     void initial_query(const char* filePath, int numS); // query file, numS argument added by sanaz
     void initial_query(int numS); //numS argument added by sanaz
-    /*void initial_ds_ea();
-    void initial_ds_ld();
-    void initial_ds_f();
-    void initial_ds_s();*/
-    /*void run_earliest_arrival(); 
-    void earliest_arrival(int source);
-    void run_latest_departure(); 
-    void latest_departure(int source);*/
     void run_fastest(); 
     void fastest(int source);
     /*void run_shortest(); 
     void shortest(int source);*/
     void print_avg_time();
     
-    // for testing the correctness
-    /*void run_earliest_arrival(const char* filePath); // output the result
-    void earliest_arrival(int source, FILE * file);  
-    void run_latest_departure(const char* filePath); 
-    void latest_departure(int source, FILE * file); 
-    void run_fastest(const char* filePath);
-    void fastest(int source, FILE * file);
-    void run_shortest(const char* filePath);
-    void shortest(int source, FILE * file);
-    void print_result(const int source, const vector<int>& t_time, FILE * file);
-    void print_result_ld(const int source, const vector<int>& t_time, FILE * file); 
-    void print_avg_time(const char* filePath1, const char* filePath2);*/
+
 
 public:
     vector< Edge > edge_list;

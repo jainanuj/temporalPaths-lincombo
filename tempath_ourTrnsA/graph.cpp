@@ -112,6 +112,53 @@ void Graph::transform(){
    //print_adjList();
 }
 
+//added by sanaz
+void Graph::Zchoche_Node_Vertex_Count(){
+   vector<set<TTYPE>> Phi; //the set of distinct in times for each node
+   int V1 = V;
+   int extraE = 0;
+   for(Edge e : edge_list){
+	if(e.w > 1){
+	   V1++;
+	   extraE++;
+	}
+   }
+   Phi.resize(V1);
+   int vNew = V;
+   for(Edge e : edge_list){
+	if(e.w > 1){
+	   Phi[e.u].insert(e.t);
+	   Phi[vNew].insert(e.t+1);
+	   //-----------------------
+	   Phi[vNew++].insert(e.t+e.w-1);
+	   Phi[e.v].insert(e.t+e.w);
+	}else{
+	   Phi[e.u].insert(e.t);
+	   Phi[e.v].insert(e.t+e.w);
+	}
+   }
+
+   //for debugging:
+   for(int i=0; i<Phi.size(); i++){
+	for(int val: Phi[i]){
+	    cout << val << " ";
+	}
+	cout << endl;
+   }
+   
+   int numV = 0;
+   int numE = 0;
+   for(int i=0; i<Phi.size(); i++){
+	numV += Phi[i].size();
+	numE += Phi[i].size()-1;
+   }
+   numE += edge_list.size()+extraE;
+
+   cerr << "number of nodes after transform: " << numV << endl;
+   cerr << "number of edges after transform: " << numE << endl;
+}
+//------------------------------------------------------------------
+
 void Graph::print_adjList(){  
    cout << "(u1, t1) (u2, t2) W" << endl; 
 
