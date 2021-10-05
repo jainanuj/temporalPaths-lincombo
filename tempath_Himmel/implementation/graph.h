@@ -356,7 +356,8 @@ void Graph::initial_algo1(int var){
 		node_list[i].clear();
 	}
 
-	arr_time[var] = min;
+	//arr_time[var] = min;
+	arr_time[var] = 0; //modified by sanaz
 	reached_algo1[var] = std::make_tuple (min,var,min);
 	nodes_to_reach = V-1;
 	source_length = edge_matrix[var].size();

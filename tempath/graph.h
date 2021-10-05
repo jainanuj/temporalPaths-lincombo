@@ -234,7 +234,7 @@ void Graph::earliest_arrival(int source)
 
 	/*added by sanaz: for debugging only*/
 	for(int i=0; i<arr_time.size(); i++)
-	    cout << arr_time[i] << endl; 
+	    cout << arr_time[i] << endl;
 }
 
 void Graph::run_earliest_arrival(const char* filePath)
