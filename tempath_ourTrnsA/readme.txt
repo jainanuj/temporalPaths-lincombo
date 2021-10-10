@@ -20,7 +20,10 @@ The third and forth arguments (the forth argument is optinal) are the number of 
 ./tempath earliest example.txt <number of source nodes> <path to the init file>[optinal] 
 
 Where init_file is the file containing the source nodes from which the single source shortest paths are computed. 
- 
+****************************************************************************************************************
+For this version only ./tmepath and the graph (example.txt) matter. The other parameters are just for the sake
+of completeness
+**************************************************************************************************************** 
 
  
 

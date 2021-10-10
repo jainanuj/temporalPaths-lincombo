@@ -139,12 +139,12 @@ void Graph::Zchoche_Node_Vertex_Count(){
    }
 
    //for debugging:
-   for(int i=0; i<Phi.size(); i++){
+   /*for(int i=0; i<Phi.size(); i++){
 	for(int val: Phi[i]){
 	    cout << val << " ";
 	}
 	cout << endl;
-   }
+   }*/
    
    int numV = 0;
    int numE = 0;

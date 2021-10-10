@@ -203,7 +203,7 @@ int main(int argc, char* argv[]){
 		}*/
 
                 //added by sanaz (for debugging):
-                g.print_earliest(strdup(result["algo"].as<std::string>().c_str()));
+                //g.print_earliest(strdup(result["algo"].as<std::string>().c_str()));
 
 		//use backtracking from source
 		if(result["backtracking"].as<bool>()){
