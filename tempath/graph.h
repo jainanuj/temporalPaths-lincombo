@@ -233,8 +233,8 @@ void Graph::earliest_arrival(int source)
 	time_sum += t.GetRuntime();
 
 	/*added by sanaz: for debugging only*/
-	for(int i=0; i<arr_time.size(); i++)
-	    cout << arr_time[i] << endl;
+	/*for(int i=0; i<arr_time.size(); i++)
+	    cout << arr_time[i] << endl;*/
 }
 
 void Graph::run_earliest_arrival(const char* filePath)
@@ -855,8 +855,8 @@ void Graph::shortest(int source)
 	time_sum += t.GetRuntime();
 
 	/*added by sanaz: for debugging only*/
-	for(int i=0; i<f_time.size(); i++)
-	    cout << f_time[i] << endl; 
+	/*for(int i=0; i<f_time.size(); i++)
+	    cout << f_time[i] << endl;*/ 
 
 }
 
@@ -962,8 +962,8 @@ void Graph::minhop(int source)
 	time_sum += t.GetRuntime();
 
 	/*added by sanaz: for debugging only*/
-	for(int i=0; i<f_time.size(); i++)
-	    cout << f_time[i] << endl; 
+	/*for(int i=0; i<f_time.size(); i++)
+	    cout << f_time[i] << endl;*/ 
 
 }
 

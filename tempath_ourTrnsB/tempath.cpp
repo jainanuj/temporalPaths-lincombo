@@ -42,7 +42,8 @@ int main(int argc, char* argv[]){
 
     if(!strcmp(option,"earliest"))
     {
-	g.run_earliest_arrival(isCyclic);
+	//g.run_earliest_arrival(isCyclic);
+	g.run_earliest_arrival(true);
     }
     else if (!strcmp(option,"latest"))
     {

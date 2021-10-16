@@ -779,8 +779,8 @@ void Graph::minhop_acyclic(int source){
     time_sum += t.GetRuntime();
 
     /*for debugging only*/
-    for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl;
+    /*for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;*/
 }
 //--------------//
 
