@@ -591,6 +591,10 @@ void Graph::shortest(int source)
 	if(done[node]) 
 	   continue; 
 	done[node] = true; 
+	//added to improve efficiency
+	int u = vertexList[node].u;
+	if(distances[u] == infinity)
+	   distances[u] = local_dist[node];
 	for(auto neigh=vertexList[node].adjList.begin(); neigh!=vertexList[node].adjList.end(); neigh++){
 	   int neiID = neigh->first;  
 	   if(!done[neiID] && vertexList[neiID].t >= t_start && vertexList[neiID].t <= t_end){
@@ -603,18 +607,18 @@ void Graph::shortest(int source)
   	}
     }
 
-    for(int i=0; i<vertexList.size(); i++)
+    /*for(int i=0; i<vertexList.size(); i++)
 	if(vertexList[i].isVin && vertexList[i].t >= t_start && vertexList[i].t <= t_end){
 	   int u = vertexList[i].u; 
 	   distances[u] = min(distances[u], local_dist[i]);
-	}
+	}*/
 	
     t.stop();
     time_sum += t.GetRuntime();
 
     /*for debugging only*/
-    /*for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl;*/ 
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl; 
 
 }
 

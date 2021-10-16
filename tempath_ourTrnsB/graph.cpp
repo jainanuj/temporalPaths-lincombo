@@ -574,6 +574,9 @@ void Graph::shortest(int source)
 	   continue;  
         //first go through all its chain neighbors upto firstDone[node]
 	int u = vertexList[node].u;
+	//added to improve efficiency
+	if(distances[u] == infinity)
+	   distances[u] = local_dist[node];
         for(int cNeigh = node; cNeigh < voutStart[u+1] && vertexList[cNeigh].t < firstDone[u] && vertexList[cNeigh].t <= t_end; cNeigh++){
 	    //we also include the node itself to avoid redundant loops 
 	    local_dist[cNeigh] = local_dist[node];
@@ -591,18 +594,18 @@ void Graph::shortest(int source)
 	firstDone[u] = vertexList[node].t;
     }
 
-    for(int i=0; i<vertexList.size(); i++)
+    /*for(int i=0; i<vertexList.size(); i++)
 	if(vertexList[i].t >= t_start && vertexList[i].t <= t_end){
 	   int u = vertexList[i].u; 
 	   distances[u] = min(distances[u], local_dist[i]);
-	}
+	}*/
 	
     t.stop();
     time_sum += t.GetRuntime();
 
     //for debugging only
-    /*for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl;*/ 
+    for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;
 
 }
 
