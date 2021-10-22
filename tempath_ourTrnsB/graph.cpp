@@ -764,7 +764,7 @@ void Graph::minhop_acyclic(int source){
 	//now, take care of the other neighbors
 	for(int j=0; j<vertexList[index].adjList.size(); j++){
 	   int neigh = vertexList[index].adjList[j].first;
-	   TTYPE arrivalTime = vertexList[neigh].t + vertexList[index].adjList[j].second;
+	   TTYPE arrivalTime = vertexList[index].t + vertexList[index].adjList[j].second;
 	   if(arrivalTime > t_end)
 		continue;
 	   localDist[neigh] = min(localDist[index]+1, localDist[neigh]);
