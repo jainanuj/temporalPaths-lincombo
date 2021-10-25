@@ -318,10 +318,10 @@ void Graph::earliest_acyclic(int source){
 	   continue;
 	int u = vertexList[index].u;
 	distances[u] = min(distances[u], localDist[index]);
-	if(vertexList[index].t > t_end) 
-	   continue; 
+        if(vertexList[index].t > t_end)
+	   continue;
 	//first check the next chain neighbor, then the other neighbors
-	if(index+1 < voutStart[u+1] && vertexList[index].t <= t_end)
+	if(index+1 < voutStart[u+1] && vertexList[index+1].t <= t_end)
 	   localDist[index+1] = min(localDist[index], localDist[index+1]);
 	for(int j=0; j<vertexList[index].adjList.size(); j++){
 	    int neigh = vertexList[index].adjList[j].first;
@@ -338,8 +338,8 @@ void Graph::earliest_acyclic(int source){
     time_sum += t.GetRuntime();
 
     /*for debugging only*/
-    for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl;
+    /*for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;*/
 }
 
 //-----------------
@@ -475,8 +475,8 @@ void Graph::fastest(int source)
     time_sum += t.GetRuntime();
 
     //for debugging only
-    for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl;
+    /*for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;*/
 }
 
 void Graph::fastest_acyclic(int source){
@@ -501,7 +501,9 @@ void Graph::fastest_acyclic(int source){
 	if(localDist[index] == infinity) //the modified version
 	   continue;	
 	int u = vertexList[index].u;
-	distances[u] = min(distances[u], localDist[index]); 
+	distances[u] = min(distances[u], localDist[index]);
+	if(vertexList[index].t > t_end)
+	   continue; 
 	//first, take care of the next chain neighbor
 	if(index+1 < voutStart[u+1] && vertexList[index+1].t <= t_end && latest[index+1] < latest[index]){
 	    latest[index+1] = latest[index];
@@ -525,8 +527,8 @@ void Graph::fastest_acyclic(int source){
     time_sum += t.GetRuntime();
 
     /*for debugging only*/
-    for(int i=0; i<distances.size(); i++)
-	cout << distances[i] << endl;
+    /*for(int i=0; i<distances.size(); i++)
+	cout << distances[i] << endl;*/
 }
 //-----------------
 
@@ -596,12 +598,6 @@ void Graph::shortest(int source)
 	firstDone[u] = vertexList[node].t;
     }
 
-    /*for(int i=0; i<vertexList.size(); i++)
-	if(vertexList[i].t >= t_start && vertexList[i].t <= t_end){
-	   int u = vertexList[i].u; 
-	   distances[u] = min(distances[u], local_dist[i]);
-	}*/
-	
     t.stop();
     time_sum += t.GetRuntime();
 
@@ -624,10 +620,12 @@ void Graph::shortest_acyclic(int source){
     
     for(int i=tpStart[source]; i<tpOrdered.size(); i++){
 	int index = tpOrdered[i];
-	if(vertexList[index].t > t_end || localDist[index] == infinity) //the modified version
+	if(localDist[index] == infinity) //the modified version
 	   continue;	
 	int u = vertexList[index].u;
 	distances[u] = min(distances[u], localDist[index]); //the modified version
+        if(vertexList[index].t > t_end)
+	   continue;
 	//first, take care of the next chain neighbor
 	if(index+1 < voutStart[u+1] && vertexList[index+1].t <= t_end)
 	   localDist[index+1] = min(localDist[index+1], localDist[index]);
@@ -756,10 +754,12 @@ void Graph::minhop_acyclic(int source){
     
     for(int i=tpStart[source]; i<tpOrdered.size(); i++){
 	int index = tpOrdered[i];
-	if(vertexList[index].t > t_end || localDist[index] == infinity) //the modified version
+	if(localDist[index] == infinity) //the modified version
 	   continue;	
 	int u = vertexList[index].u;
 	distances[u] = min(distances[u], localDist[index]); //the modified version
+        if(vertexList[index].t > t_end)
+	   continue;
 	//first, take care of the next chain neighbor
 	if(index+1 < voutStart[u+1] && vertexList[index+1].t <= t_end)
 	   localDist[index+1] = min(localDist[index+1], localDist[index]);
@@ -772,13 +772,6 @@ void Graph::minhop_acyclic(int source){
 	   localDist[neigh] = min(localDist[index]+1, localDist[neigh]);
 	}	   
     }
-
-    /*use localDist to compute distances*/
-    //for(int i=0; i<vertexList.size()-1; i++) //ingore the dummy node
-	//if(vertexList[i].t >= t_start && vertexList[i].t <= t_end){
-	  // int u = vertexList[i].u; 
-	   //distances[u] = min(distances[u], localDist[i]);
-	//}
 
     t.stop();
     time_sum += t.GetRuntime();

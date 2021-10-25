@@ -51,8 +51,8 @@ int main(int argc, char* argv[]){
     }
     else if (!strcmp(option,"shortest"))
     {
-	//g.run_shortest(isCyclic);
-	g.run_shortest(true);
+	g.run_shortest(isCyclic);
+	//g.run_shortest(true);
     }
     else if(!strcmp(option,"fastest"))
     {
