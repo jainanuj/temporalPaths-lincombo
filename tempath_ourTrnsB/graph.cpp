@@ -55,6 +55,7 @@ void Graph::dominatedRemoval(){
 bool Graph::transform(){
    bool zeroW = false; //checks whether there are any links of w = 0 in the transformed graph
 
+   int edge_cnt = 0;
    vector<set<TTYPE>> Tout; //the set of distinct out times for each node
    Tout.resize(V);
    vector<TTYPE> maxIN(V, -1); //max in-time for each node
@@ -73,8 +74,11 @@ bool Graph::transform(){
    for(int i=0; i<V; i++){
 	voutStart.push_back(index);
 	//dummy node, so that the nodes with an empty Tout but non-empty Tin or nodes whose lost input cannot get out are accounted for
-	if(Tout[i].empty() || maxOUT[i] < maxIN[i])
+	if(Tout[i].empty() || maxOUT[i] < maxIN[i]){
 	   Tout[i].insert(maxIN[i]);
+	   edge_cnt += Tout[i].size();
+        }else
+	   edge_cnt += Tout[i].size()-1;
 	//elements in Tin[i] are sorted in increasing order of t
 	for(it=Tout[i].begin(); it!=Tout[i].end(); it++){
 	  t = *it;
@@ -90,7 +94,7 @@ bool Graph::transform(){
 	cout << "u: " << vertexList[i].u << ", t: " << vertexList[i].t << endl;*/
 
    //edge creation step 1: adding the weighted links
-   int edge_cnt = 0;
+   //int edge_cnt = 0;
    for(Edge e : edge_list){
 	int u_index = outMap[make_pair(e.u, e.t)];
         //we are looking for the smallest t greater that e.t+e.w
