@@ -74,11 +74,9 @@ bool Graph::transform(){
    for(int i=0; i<V; i++){
 	voutStart.push_back(index);
 	//dummy node, so that the nodes with an empty Tout but non-empty Tin or nodes whose lost input cannot get out are accounted for
-	if(Tout[i].empty() || maxOUT[i] < maxIN[i]){
+	if(Tout[i].empty() || maxOUT[i] < maxIN[i])
 	   Tout[i].insert(maxIN[i]);
-	   edge_cnt += Tout[i].size();
-        }else
-	   edge_cnt += Tout[i].size()-1;
+	edge_cnt += Tout[i].size()-1;
 	//elements in Tin[i] are sorted in increasing order of t
 	for(it=Tout[i].begin(); it!=Tout[i].end(); it++){
 	  t = *it;

@@ -162,8 +162,8 @@ bool Graph::transform(){
         }
    }
 	
-   //cerr << "number of nodes after transformation: " << vertexList.size() << endl;
-   //cerr << "number of edges after transformation: " << edgeCnt << endl;
+   cerr << "number of nodes after transformation: " << vertexList.size() << endl;
+   cerr << "number of edges after transformation: " << edgeCnt << endl;
 
    return zeroW;
 }
