@@ -1,3 +1,15 @@
+The codes in this project are improvements over/modifications of the codes taken from the following resources:
+[1] H. Wu, J. Cheng, Y. Ke, S. Huang, Y. Huang, and H. Wu, “Effi-cient algorithms for temporal path computation,” IEEE Transactions on
+Knowledge and Data Engineering, vol. 28, no. 11, pp. 2927–2942, 2016
+
+[2] M. Bentert, A.-S. Himmel, A. Nichterlein, and R. Niedermeier, “Efficient computation of optimal temporal walks under waiting-time constraints,”
+Applied Network Science, vol. 5, no. 1, pp. 1–26, 2020
+
+[3] P. Zschoche, T. Fluschnik, H. Molter, and R. Niedermeier, “The complexity of finding small separators in temporal graphs,” Journal of
+Computer and System Sciences, vol. 107, pp. 72–92, 2020
+
+The first reference is our most important source. The codes/funcitons addded by me are marked by "//modified by sanaz" or "//added by sanaz". 
+
 The "data" folder contains the raw data and the pre-processing methods. 
 The "inputGraphs" folder contains the data ready to be input to the shortest path methods. 
 "init1.txt" and "test1.txt" are toy inputs from Figure 2 of Wu et. al. paper. 
