@@ -23,44 +23,48 @@ int main(int argc, char* argv[]){
     bool isCyclic = false;
     if(hasZeroW)
        isCyclic = g.cycleDetector();   
-    if(!isCyclic){
-	g.topologicalOrder();
+    if(!isCyclic) {
+        g.topologicalOrder();
     }
     cerr << "isCyclic: " << isCyclic << endl;
 
     /*modified by sanaz*/
     int numS = stoi(argv[3]);
-    if(numS <= 0){
-	cout << "number of source nodes should be a positive integer" << endl;
-	return 0; 
+    if(numS <= 0) {
+        cout << "number of source nodes should be a positive integer" << endl;
+        return 0;
     }
     if(argc == 5)
-	g.initial_query(argv[4], numS);
+        g.initial_query(argv[4], numS);
     else
-	g.initial_query(numS);
+        g.initial_query(numS);
 
 
     if(!strcmp(option,"earliest"))
     {
-	g.run_earliest_arrival(isCyclic);
+        g.run_earliest_arrival(isCyclic);
     }
     else if (!strcmp(option,"latest"))
     {
-	cout << "disactivated for now!" << endl;	
+        cout << "disactivated for now!" << endl;
         //g.run_latest_departure();
     }
     else if (!strcmp(option,"shortest"))
     {
-	g.run_shortest(isCyclic);
-	//g.run_shortest(true);
+        g.run_shortest(isCyclic);
+        //g.run_shortest(true);
     }
     else if(!strcmp(option,"fastest"))
     {
-	g.run_fastest(isCyclic);
+        g.run_fastest(isCyclic);
     }
     else if(!strcmp(option,"minhop")) //added by sanaz
     {
-	g.run_minhop(isCyclic);
+        g.run_minhop(isCyclic);
+    }
+    else if(!strcmp(option,"linear"))
+    {
+        g.run_linear();
     }
 	
     //cout<<"hello world!!!" <<endl; //removed by sanaz, I see no reason for this statement

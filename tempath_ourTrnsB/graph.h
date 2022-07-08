@@ -99,6 +99,11 @@ public:
     void run_earliest_arrival(bool isCyclic);    
     void earliest_acyclic(int source);
 
+    void run_linear();
+    void linear_combo(int source);
+    bool feasible(int arr, int dep, int vertIndex);
+
+
 public:
     vector< Edge > edge_list;
     vector< int > sources;
@@ -109,6 +114,7 @@ public:
     /*added by sanaz*/
     int numSources; 
 
+    vector<TTYPE> opt_linCombo;
     //added by sanaz
     vector<Node> vertexList; //a list of vertices in the transformed graph, sorted by u
     vector<int> voutStart; //an index into the vertexList: Vout set for node i (in the transformed graph) is in vertexList[voutStart[i], voutStart[i+1]) 

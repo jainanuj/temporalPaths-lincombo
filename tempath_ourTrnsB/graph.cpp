@@ -7,7 +7,8 @@ Graph::Graph(const char* filePath)
    	x=fscanf(file, "%d %d",&V, &dynamic_E);
 
     //added by sanaz:
-    distances.resize(V); 
+    distances.resize(V);
+    opt_linCombo.resize(V);
     //---------------
 	
 	Edge e; 
@@ -80,7 +81,7 @@ bool Graph::transform(){
 	//elements in Tin[i] are sorted in increasing order of t
 	for(it=Tout[i].begin(); it!=Tout[i].end(); it++){
 	  t = *it;
-          Node tmpNode(i, t); 
+      Node tmpNode(i, t);
 	  vertexList.push_back(tmpNode);
 	  outMap[make_pair(i, t)] = index++;
 	}
@@ -102,7 +103,7 @@ bool Graph::transform(){
 	      int v_index = outMap[make_pair(e.v, t)];
 	      vertexList[u_index].adjList.push_back(make_pair(v_index, e.w));
 	      if(e.w == 0)
-		 zeroW = true;
+              zeroW = true;
 	      edge_cnt++; // just for debugging
 	      break;
 	   }
@@ -123,6 +124,16 @@ bool Graph::transform(){
 	    rev_adjList[neigh->first].push_back(make_pair(i, neigh->second)); 
         }
    }
+    
+    for(int i=0; i<vertexList.size(); i++)
+    {
+        cout << "u: " << vertexList[i].u << ", t: " << vertexList[i].t << "-->";
+        for(auto neigh=vertexList[i].adjList.begin(); neigh!=vertexList[i].adjList.end(); neigh++){
+            cout << "(" << vertexList[neigh->first].u << "," << vertexList[neigh->first].t
+                << "," <<neigh->second<<"); ";
+        }
+        cout << endl;
+    }
 
    return zeroW;
 }
@@ -145,7 +156,7 @@ bool Graph::cycleRec(vector<bool>& visited, vector<bool>& inStack, int index){
 	if(inStack[neigh])
 	   return true;
         if(!visited[neigh] && cycleRec(visited, inStack, neigh))
-	   return true;
+            return true;
    }
    inStack[index] = false;
    return false;
@@ -155,16 +166,16 @@ void Graph::topologicalOrder(){
    int n = vertexList.size()-1; //ignore the last dummy node
    vector<bool> visited(n, false);
    vector<int> orderTmp;
-   for(int i=0; i<n; i++){
-	if(!visited[i])
-	   topologicalRec(visited, i, orderTmp);
+   for(int i=0; i<n; i++) {
+       if(!visited[i])
+           topologicalRec(visited, i, orderTmp);
    }
-  tpStart.resize(n, -1); //modified version
-  for(int i=n-1; i>=0; i-- ){
-     tpOrdered.push_back(orderTmp[i]);
-     int u = vertexList[orderTmp[i]].u;
-     if(tpStart[u] == -1)
-	tpStart[u] = tpOrdered.size()-1;
+   tpStart.resize(n, -1); //modified version
+   for(int i=n-1; i>=0; i-- ) {
+        tpOrdered.push_back(orderTmp[i]);
+        int u = vertexList[orderTmp[i]].u;
+        if(tpStart[u] == -1)
+            tpStart[u] = tpOrdered.size()-1;
   }
 }
 
@@ -173,10 +184,10 @@ void Graph::topologicalRec(vector<bool>& visited, int index, vector<int>& orderT
    int u = vertexList[index].u;
    //take care of the next chain neighbor
    if(index+1 < voutStart[u+1] && !visited[index+1])
-	topologicalRec(visited, index+1, orderTmp);
-   for(int i=0; i<vertexList[index].adjList.size(); i++){
-	int neigh = vertexList[index].adjList[i].first;
-	if(!visited[neigh])
+       topologicalRec(visited, index+1, orderTmp);
+   for(int i=0; i<vertexList[index].adjList.size(); i++) {
+       int neigh = vertexList[index].adjList[i].first;
+       if (!visited[neigh])
 	   topologicalRec(visited, neigh, orderTmp);
    }
    orderTmp.push_back(index);
@@ -213,7 +224,8 @@ void Graph::initial_query(int numS)
     int s;
     for(int i = 0 ; i < numSources; i++)
     {
-    	s=rand()%V;
+    	//s=rand()%V;
+        s=0;
         sources.push_back(s);
     }
 
@@ -246,7 +258,7 @@ void Graph::run_earliest_arrival(bool isCyclic)
 	for(int i = 0 ;i < sources.size(); i ++)
     { 
     	for(int j=0; j<V; j++)
-	  distances[j] = infinity; 
+        distances[j] = infinity;
 	distances[sources[i]] = t_start;
 	if(isCyclic)
     	   earliest_arrival(sources[i]);
@@ -315,25 +327,25 @@ void Graph::earliest_acyclic(int source){
     }
     
     for(int i=tpStart[source]; i<tpOrdered.size(); i++){
-	int index = tpOrdered[i];	
+        int index = tpOrdered[i];
     	if(localDist[index] == infinity)//should not expand the non-visited nodes
-	   continue;
-	int u = vertexList[index].u;
-	distances[u] = min(distances[u], localDist[index]);
+            continue;
+        int u = vertexList[index].u;
+        distances[u] = min(distances[u], localDist[index]);
         if(vertexList[index].t > t_end)
-	   continue;
-	//first check the next chain neighbor, then the other neighbors
-	if(index+1 < voutStart[u+1] && vertexList[index+1].t <= t_end)
-	   localDist[index+1] = min(localDist[index], localDist[index+1]);
-	for(int j=0; j<vertexList[index].adjList.size(); j++){
-	    int neigh = vertexList[index].adjList[j].first;
-	    int linkW = vertexList[index].adjList[j].second;
-	    TTYPE arrivalTime = vertexList[index].t + linkW;
-	    if(arrivalTime > t_end)
-		continue; 	    
-	    if(localDist[neigh] > arrivalTime)
-		localDist[neigh] = arrivalTime;
-	}	   
+            continue;
+        //first check the next chain neighbor, then the other neighbors
+        if(index+1 < voutStart[u+1] && vertexList[index+1].t <= t_end)
+            localDist[index+1] = min(localDist[index], localDist[index+1]);
+        for(int j=0; j<vertexList[index].adjList.size(); j++){
+            int neigh = vertexList[index].adjList[j].first;
+            int linkW = vertexList[index].adjList[j].second;
+            TTYPE arrivalTime = vertexList[index].t + linkW;
+            if(arrivalTime > t_end)
+            continue;
+            if(localDist[neigh] > arrivalTime)
+            localDist[neigh] = arrivalTime;
+        }
     }
 
     t.stop();
@@ -344,6 +356,90 @@ void Graph::earliest_acyclic(int source){
 	cout << distances[i] << endl;*/
 }
 
+
+bool Graph::feasible(int arr, int dep, int vertIndex)
+{
+    TTYPE alpha = 0, beta=infinity;
+    if (((dep - arr) <= beta) and ((dep - arr) >= alpha))
+        return true;
+    else
+        return false;
+}
+
+void Graph::linear_combo(int source){
+    Timer t;
+    int c_fmst=0,c_rvsfmst=0,c_fstst=1,c_shrtst=0,c_cst=0,c_hp=0,c_wait=0;
+    //cost is the cost of the dominant path to node (u,t)
+    opt_linCombo.resize(V,infinity);
+    vector<pair<TTYPE, int>> cost(vertexList.size(), make_pair(infinity,infinity));
+    vector<TTYPE> arrival(vertexList.size(), infinity);
+    t.start();
+    for(int it = voutStart[source]; it < voutStart[source+1]; it++) {
+        if(vertexList[it].t >= t_start && vertexList[it].t <= t_end)
+        {
+            cost[it] = make_pair(0,0);
+            arrival[it] = vertexList[it].t;
+        }
+    }
+    opt_linCombo[source] = 0;
+    for(int i=tpStart[source]; i<tpOrdered.size(); i++) {
+        int index = tpOrdered[i];
+        if(arrival[index] == infinity) //the modified version
+           continue;
+        int u = vertexList[index].u;
+        if(vertexList[index].t > t_end)
+           continue;
+        //first, take care of the next chain neighbors
+        //Assign the same cost to all chain nbrs if this path dominates over the dominant path on the chain nbr.
+        if (u != source)
+        {
+            int indx_crit = cost[index].second; //cost[index]-(c_fmst+c_fstst+c_wait)*arrival[index];
+            int chainIndx = index+1;
+            if(chainIndx < voutStart[u+1]) {
+                if ((indx_crit < cost[chainIndx].second) && (feasible(arrival[index], vertexList[chainIndx].t, u))) {
+                    cost[chainIndx]=cost[index];
+                    arrival[chainIndx]=arrival[index];
+                }
+            }
+        }
+        //now, take care of the other neighbors
+        for(int j=0; j<vertexList[index].adjList.size(); j++)  {
+            int neighNodeTr = vertexList[index].adjList[j].first;
+            int v = vertexList[neighNodeTr].u;
+            if (v==source)      //There is never any benefit of coming back to the source. Cost is already 0 at source vertex.
+                continue;
+            int linkW = vertexList[index].adjList[j].second;
+            TTYPE newArrivalTime = vertexList[index].t + linkW;
+            if (newArrivalTime > t_end)
+               continue;
+            TTYPE newCost;
+            if (u== source)
+                newCost = c_fmst*newArrivalTime + c_rvsfmst*-1*vertexList[index].t + c_fstst*(newArrivalTime-vertexList[index].t)
+                        + c_shrtst*1+c_cst*1+c_hp + c_wait*0;
+            else
+                newCost = cost[index].first - (c_fmst+c_fstst+c_wait)*arrival[index]
+                            + (c_fmst+c_fstst)*newArrivalTime
+                            + c_shrtst*1+ c_cst*1 + c_hp + c_wait*vertexList[index].t;
+            
+            if (newCost < opt_linCombo[v])
+                opt_linCombo[v]=newCost;
+            if (!(feasible(newArrivalTime,vertexList[neighNodeTr].t, v)))
+                continue;
+            int newCostCrit = newCost-(c_fmst+c_fstst+c_wait)*newArrivalTime;
+            if (newCostCrit < cost[neighNodeTr].second) {
+                cost[neighNodeTr].first=newCost; cost[neighNodeTr].second=newCostCrit;
+                arrival[neighNodeTr]=newArrivalTime;
+            }
+        }
+    }
+
+    t.stop();
+    time_sum += t.GetRuntime();
+
+    /*for debugging only*/
+    for(int i=0; i<opt_linCombo.size(); i++)
+        cout << i << "  " << opt_linCombo[i] << endl;
+}
 //-----------------
 
 /*void Graph::run_latest_departure()
@@ -666,6 +762,20 @@ void Graph::run_minhop(bool isCyclic)
 	   minhop_acyclic(sources[i]);
     }
     
+    print_avg_time();
+
+}
+
+void Graph::run_linear()
+{
+    time_sum=0;
+    
+    for(int i = 0 ;i < sources.size() ;i ++)
+    {
+        for(int j=0; j<V; j++)
+            opt_linCombo[j] = infinity;
+        linear_combo(sources[i]);
+    }
     print_avg_time();
 
 }
