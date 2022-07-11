@@ -125,7 +125,7 @@ bool Graph::transform(){
         }
    }
     
-    for(int i=0; i<vertexList.size(); i++)
+/*    for(int i=0; i<vertexList.size(); i++)
     {
         cout << "u: " << vertexList[i].u << ", t: " << vertexList[i].t << "-->";
         for(auto neigh=vertexList[i].adjList.begin(); neigh!=vertexList[i].adjList.end(); neigh++){
@@ -134,7 +134,7 @@ bool Graph::transform(){
         }
         cout << endl;
     }
-
+*/
    return zeroW;
 }
 
@@ -368,7 +368,7 @@ bool Graph::feasible(int arr, int dep, int vertIndex)
 
 void Graph::linear_combo(int source){
     Timer t;
-    int c_fmst=0,c_rvsfmst=0,c_fstst=1,c_shrtst=0,c_cst=0,c_hp=0,c_wait=0;
+    int c_fmst=25,c_rvsfmst=10,c_fstst=10,c_shrtst=0,c_cst=0,c_hp=44,c_wait=1;
     //cost is the cost of the dominant path to node (u,t)
     opt_linCombo.resize(V,infinity);
     vector<pair<TTYPE, int>> cost(vertexList.size(), make_pair(infinity,infinity));
