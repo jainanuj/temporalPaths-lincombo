@@ -55,11 +55,13 @@ struct Edge
 struct Node{
     int u; //the node id in the non-transformed graph
     TTYPE t; //the time stamp corresponding to Vin/Vout
+    int tpPos;
     vector<pair<int, int>> adjList;
     Node() {}
     Node(int _u, TTYPE _t){
 	u = _u; 
-	t = _t; 
+	t = _t;
+    tpPos=-1;
     }
 };
 

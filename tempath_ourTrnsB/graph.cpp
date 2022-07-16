@@ -174,6 +174,7 @@ void Graph::topologicalOrder(){
    for(int i=n-1; i>=0; i-- ) {
         tpOrdered.push_back(orderTmp[i]);
         int u = vertexList[orderTmp[i]].u;
+        vertexList[orderTmp[i]].tpPos = tpOrdered.size()-1;
         if(tpStart[u] == -1)
             tpStart[u] = tpOrdered.size()-1;
   }
@@ -225,7 +226,7 @@ void Graph::initial_query(int numS)
     for(int i = 0 ; i < numSources; i++)
     {
     	//s=rand()%V;
-        s=0;
+        s=0; //116834; //0;
         sources.push_back(s);
     }
 
@@ -368,7 +369,7 @@ bool Graph::feasible(int arr, int dep, int vertIndex)
 
 void Graph::linear_combo(int source){
     Timer t;
-    int c_fmst=25,c_rvsfmst=10,c_fstst=10,c_shrtst=0,c_cst=0,c_hp=44,c_wait=1;
+    int c_fmst=1,c_rvsfmst=0,c_fstst=0,c_shrtst=0,c_cst=0,c_hp=2,c_wait=1;
     //cost is the cost of the dominant path to node (u,t)
     opt_linCombo.resize(V,infinity);
     vector<pair<TTYPE, int>> cost(vertexList.size(), make_pair(infinity,infinity));
@@ -382,10 +383,16 @@ void Graph::linear_combo(int source){
         }
     }
     opt_linCombo[source] = 0;
+//    cout << vertexList[tpOrdered[0]].u << endl;
+    int maxTpSeen=tpStart[source];
     for(int i=tpStart[source]; i<tpOrdered.size(); i++) {
         int index = tpOrdered[i];
         if(arrival[index] == infinity) //the modified version
-           continue;
+        {
+            if (i > maxTpSeen)
+                break;
+            continue;
+        }
         int u = vertexList[index].u;
         if(vertexList[index].t > t_end)
            continue;
@@ -399,6 +406,8 @@ void Graph::linear_combo(int source){
                 if ((indx_crit < cost[chainIndx].second) && (feasible(arrival[index], vertexList[chainIndx].t, u))) {
                     cost[chainIndx]=cost[index];
                     arrival[chainIndx]=arrival[index];
+                    if (vertexList[chainIndx].tpPos > maxTpSeen)
+                        maxTpSeen=vertexList[chainIndx].tpPos;
                 }
             }
         }
@@ -412,6 +421,8 @@ void Graph::linear_combo(int source){
             TTYPE newArrivalTime = vertexList[index].t + linkW;
             if (newArrivalTime > t_end)
                continue;
+            if (vertexList[neighNodeTr].tpPos > maxTpSeen)
+                maxTpSeen=vertexList[neighNodeTr].tpPos;
             TTYPE newCost;
             if (u== source)
                 newCost = c_fmst*newArrivalTime + c_rvsfmst*-1*vertexList[index].t + c_fstst*(newArrivalTime-vertexList[index].t)
