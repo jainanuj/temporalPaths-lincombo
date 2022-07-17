@@ -18,7 +18,7 @@
 #include "Timer.h"
 
 //added by sanaz: if max timestamp fits into int or long
-#define USE_INT
+//#define USE_INT
 
 #ifdef USE_INT
 #define TTYPE int 
@@ -103,7 +103,7 @@ public:
 
     void run_linear();
     void linear_combo(int source);
-    bool feasible(int arr, int dep, int vertIndex);
+    bool feasible(TTYPE arr, TTYPE dep, int vertIndex);
 
 
 public:

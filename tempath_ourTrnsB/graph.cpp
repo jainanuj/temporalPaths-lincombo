@@ -358,7 +358,7 @@ void Graph::earliest_acyclic(int source){
 }
 
 
-bool Graph::feasible(int arr, int dep, int vertIndex)
+bool Graph::feasible(TTYPE arr, TTYPE dep, int vertIndex)
 {
     TTYPE alpha = 0, beta=infinity;
     if (((dep - arr) <= beta) and ((dep - arr) >= alpha))
@@ -372,7 +372,7 @@ void Graph::linear_combo(int source){
     int c_fmst=1,c_rvsfmst=0,c_fstst=0,c_shrtst=0,c_cst=0,c_hp=2,c_wait=1;
     //cost is the cost of the dominant path to node (u,t)
     opt_linCombo.resize(V,infinity);
-    vector<pair<TTYPE, int>> cost(vertexList.size(), make_pair(infinity,infinity));
+    vector<pair<TTYPE, TTYPE>> cost(vertexList.size(), make_pair(infinity,infinity));
     vector<TTYPE> arrival(vertexList.size(), infinity);
     t.start();
     for(int it = voutStart[source]; it < voutStart[source+1]; it++) {
@@ -400,7 +400,7 @@ void Graph::linear_combo(int source){
         //Assign the same cost to all chain nbrs if this path dominates over the dominant path on the chain nbr.
         if (u != source)
         {
-            int indx_crit = cost[index].second; //cost[index]-(c_fmst+c_fstst+c_wait)*arrival[index];
+            TTYPE indx_crit = cost[index].second; //cost[index]-(c_fmst+c_fstst+c_wait)*arrival[index];
             int chainIndx = index+1;
             if(chainIndx < voutStart[u+1]) {
                 if ((indx_crit < cost[chainIndx].second) && (feasible(arrival[index], vertexList[chainIndx].t, u))) {
