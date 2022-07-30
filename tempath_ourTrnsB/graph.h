@@ -102,7 +102,7 @@ public:
     void earliest_acyclic(int source);
 
     void run_linear();
-    void linear_combo(int source);
+    void linear_combo(int source, std::ofstream& timings);
     bool feasible(TTYPE arr, TTYPE dep, int vertIndex);
 
 

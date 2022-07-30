@@ -1,4 +1,5 @@
 #include "graph.h"
+#include <fstream>
 
 Graph::Graph(const char* filePath)
 {
@@ -225,8 +226,8 @@ void Graph::initial_query(int numS)
     int s;
     for(int i = 0 ; i < numSources; i++)
     {
-    	//s=rand()%V;
-        s=0; //116834; //0;
+    	s=rand()%V;
+        //s=0; //116834; //0;
         sources.push_back(s);
     }
 
@@ -275,7 +276,7 @@ void Graph::earliest_arrival(int source)
 {
     Timer t;
     t.start();
-	
+/*
     //define and initialize data structures	
     vector<bool> visited(vertexList.size(), false);
     queue<int> Q; 
@@ -308,9 +309,10 @@ void Graph::earliest_arrival(int source)
 	    Q.push(node+1);
 	}
     }
-	
+*/
     t.stop();
     time_sum += t.GetRuntime();
+
 
     //for debugging only
     /*for(int i=0; i<distances.size(); i++)
@@ -367,7 +369,7 @@ bool Graph::feasible(TTYPE arr, TTYPE dep, int vertIndex)
         return false;
 }
 
-void Graph::linear_combo(int source){
+void Graph::linear_combo(int source, std::ofstream& timings){
     Timer t;
     int c_fmst=1,c_rvsfmst=0,c_fstst=0,c_shrtst=0,c_cst=0,c_hp=2,c_wait=1;
     //cost is the cost of the dominant path to node (u,t)
@@ -436,7 +438,7 @@ void Graph::linear_combo(int source){
                 opt_linCombo[v]=newCost;
             if (!(feasible(newArrivalTime,vertexList[neighNodeTr].t, v)))
                 continue;
-            int newCostCrit = newCost-(c_fmst+c_fstst+c_wait)*newArrivalTime;
+            TTYPE newCostCrit = newCost-(c_fmst+c_fstst+c_wait)*newArrivalTime;
             if (newCostCrit < cost[neighNodeTr].second) {
                 cost[neighNodeTr].first=newCost; cost[neighNodeTr].second=newCostCrit;
                 arrival[neighNodeTr]=newArrivalTime;
@@ -446,10 +448,16 @@ void Graph::linear_combo(int source){
 
     t.stop();
     time_sum += t.GetRuntime();
+    timings << source << "   " << t.GetRuntime() << endl;
+    
+    string resultsFile = "./results_" + std::to_string(source) + ".txt";
+    std::ofstream fresults(resultsFile);
 
     /*for debugging only*/
+    fresults << V << endl;
     for(int i=0; i<opt_linCombo.size(); i++)
-        cout << i << "  " << opt_linCombo[i] << endl;
+        //cout << i << "  " << opt_linCombo[i] << endl;
+        fresults << i << "  " << opt_linCombo[i] << endl;
 }
 //-----------------
 
@@ -667,7 +675,7 @@ void Graph::shortest(int source)
     t.start();
 
     //defining and initializing data structures
-    typedef pair<int, int> iPair; 	
+/*    typedef pair<int, int> iPair;
     priority_queue< iPair, vector <iPair> , greater<iPair> > pq; //pairs of <distance, id> sorted in increasing order of distance
     vector<int> local_dist(vertexList.size(), infinity); //distance vector for the nodes in the transformed graph
     vector<bool> done(vertexList.size(), false); //keeping track of the nodes whose distance is established
@@ -706,7 +714,7 @@ void Graph::shortest(int source)
 	}
 	firstDone[u] = vertexList[node].t;
     }
-
+*/
     t.stop();
     time_sum += t.GetRuntime();
 
@@ -780,12 +788,13 @@ void Graph::run_minhop(bool isCyclic)
 void Graph::run_linear()
 {
     time_sum=0;
+    std::ofstream timings_file("./timings");
     
     for(int i = 0 ;i < sources.size() ;i ++)
     {
         for(int j=0; j<V; j++)
             opt_linCombo[j] = infinity;
-        linear_combo(sources[i]);
+        linear_combo(sources[i], timings_file);
     }
     print_avg_time();
 

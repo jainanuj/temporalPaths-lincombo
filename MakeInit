@@ -1,0 +1,8 @@
+initProd: initProd.o
+	g++ -O3  initProd.o -o initProd 
+
+initProd.o: initProd.cpp 
+	g++ -std=c++11 -Wno-deprecated -O3 -c initProd.cpp
+
+clean: 
+	rm initProd *.o
