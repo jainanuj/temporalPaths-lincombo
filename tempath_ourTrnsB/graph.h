@@ -32,7 +32,7 @@ using namespace std;
 #ifdef USE_INT
 const int infinity = 2e9;
 #else
-const long infinity = 2e18;
+const long infinity = 2e9;      //2e18;
 #endif
 
 struct Edge
@@ -56,7 +56,7 @@ struct Node{
     int u; //the node id in the non-transformed graph
     TTYPE t; //the time stamp corresponding to Vin/Vout
     int tpPos;
-    vector<pair<int, int>> adjList;
+    vector<tuple<int, int, int>> adjList; //indexOfVertex, trvlTm of edge, span. //Anuj added an extra int for span.
     Node() {}
     Node(int _u, TTYPE _t){
 	u = _u; 
@@ -117,6 +117,8 @@ public:
     int numSources; 
 
     vector<TTYPE> opt_linCombo;
+    vector<TTYPE> alpha;
+    vector<TTYPE> beta;
     //added by sanaz
     vector<Node> vertexList; //a list of vertices in the transformed graph, sorted by u
     vector<int> voutStart; //an index into the vertexList: Vout set for node i (in the transformed graph) is in vertexList[voutStart[i], voutStart[i+1]) 

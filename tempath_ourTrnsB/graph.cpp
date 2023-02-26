@@ -22,8 +22,14 @@ Graph::Graph(const char* filePath)
 	#endif
         edge_list.push_back(e);
     }
-
     fclose(file);
+    alpha.resize(V);
+    beta.resize(V);
+    for (int i = 0; i < V; i++)
+    {
+        alpha[i] = 0;
+        beta[i] = infinity;
+    }
 }
 
 //added by sanaz: to remove the dominant edges from the edge list
@@ -65,8 +71,9 @@ bool Graph::transform(){
    for(Edge e : edge_list){
 	Tout[e.u].insert(e.t);
         maxOUT[e.u] = max(maxOUT[e.u], e.t);
-	maxIN[e.v] = max(maxIN[e.v], e.t+e.w);
+	maxIN[e.v] = max(maxIN[e.v], e.t+e.w+alpha[e.v]);       //Comment Anuj
    }
+    
 
    set <TTYPE>::iterator it; 
    //to map (u, t) to their corresponding IDs in the transformed graph
@@ -76,9 +83,10 @@ bool Graph::transform(){
    for(int i=0; i<V; i++){
 	voutStart.push_back(index);
 	//dummy node, so that the nodes with an empty Tout but non-empty Tin or nodes whose lost input cannot get out are accounted for
-	if(Tout[i].empty() || maxOUT[i] < maxIN[i])
-	   Tout[i].insert(maxIN[i]);
-	edge_cnt += Tout[i].size()-1;
+//	if(Tout[i].empty() || maxOUT[i] < maxIN[i])
+//	   Tout[i].insert(maxIN[i]);
+    Tout[i].insert(infinity);      //Add a sink node for edges that come in but cannot continue further due to waiting constraints or otherwise.
+	edge_cnt += Tout[i].size()-1; //-1 is to exclude last (v,infty) as there is no outgoing edge from there.
 	//elements in Tin[i] are sorted in increasing order of t
 	for(it=Tout[i].begin(); it!=Tout[i].end(); it++){
 	  t = *it;
@@ -98,17 +106,36 @@ bool Graph::transform(){
    for(Edge e : edge_list){
 	int u_index = outMap[make_pair(e.u, e.t)];
         //we are looking for the smallest t greater that e.t+e.w
+       //we need to be looking for smallest t greater than e.t+e.w+alpha(v) -- ANUJ
+       bool edgeCreated=false;
+       int span = -1;
+       int v_index_edge=0;
 	for(auto set_it = Tout[e.v].begin(); set_it != Tout[e.v].end(); set_it++){
 	   t = *set_it;
-	   if(t >= e.t+e.w){
-	      int v_index = outMap[make_pair(e.v, t)];
-	      vertexList[u_index].adjList.push_back(make_pair(v_index, e.w));
+	   if((t >= e.t+e.w + alpha[e.v]) && (edgeCreated==false)){
+	      v_index_edge = outMap[make_pair(e.v, t)];
+           edgeCreated=true;
 	      if(e.w == 0)
               zeroW = true;
 	      edge_cnt++; // just for debugging
-	      break;
+	      //break;    //Don't break yet. Find span -- ANUJ
 	   }
+       if ((edgeCreated == true) && (span==-1)) //If edge created, look for span and updated it.    --ANUJ
+       {
+            if ((t == infinity) || (t > e.t+e.w + beta[e.v]))
+            {
+                span = outMap[make_pair(e.v, t)];
+                break;
+            }
+       }
 	}
+    if (v_index_edge < span) {      //edge that can be extended w.r.t waiting time constraints.
+           vertexList[u_index].adjList.push_back(make_tuple(v_index_edge,e.w,span));
+    }
+    else {
+           v_index_edge = outMap[make_pair(e.v, infinity)];     //in-edge and span are same so in-edge cant be ext. so it goes to catch all vert.
+           vertexList[u_index].adjList.push_back(make_tuple(v_index_edge,e.w,v_index_edge));
+    }
    }
 
    //adding a dummy node to be used in minhop 
@@ -122,20 +149,20 @@ bool Graph::transform(){
    rev_adjList.resize(index);
    for(int i=0; i<index; i++){
 	for(auto neigh=vertexList[i].adjList.begin(); neigh!=vertexList[i].adjList.end(); neigh++){
-	    rev_adjList[neigh->first].push_back(make_pair(i, neigh->second)); 
+	    rev_adjList[get<0>(*neigh)].push_back(make_pair(i, get<1>(*neigh)));
         }
    }
     
-/*    for(int i=0; i<vertexList.size(); i++)
+    for(int i=0; i<vertexList.size(); i++)
     {
-        cout << "u: " << vertexList[i].u << ", t: " << vertexList[i].t << "-->";
+        cout << i << ": u:" << vertexList[i].u << ", t:" << vertexList[i].t << "-->";
         for(auto neigh=vertexList[i].adjList.begin(); neigh!=vertexList[i].adjList.end(); neigh++){
-            cout << "(" << vertexList[neigh->first].u << "," << vertexList[neigh->first].t
-                << "," <<neigh->second<<"); ";
+            cout << "(" << vertexList[get<0>(*neigh)].u << "," << vertexList[get<0>(*neigh)].t
+                << ", edge w=" << get<1>(*neigh)<< ", edge span=" << get<2>(*neigh) << "); ";
         }
         cout << endl;
     }
-*/
+
    return zeroW;
 }
 
@@ -153,11 +180,11 @@ bool Graph::cycleRec(vector<bool>& visited, vector<bool>& inStack, int index){
    visited[index] = true;
    inStack[index] = true;
    for(int i=0; i<vertexList[index].adjList.size(); i++){
-	int neigh = vertexList[index].adjList[i].first;
+	int neigh = get<0>(vertexList[index].adjList[i]);
 	if(inStack[neigh])
 	   return true;
-        if(!visited[neigh] && cycleRec(visited, inStack, neigh))
-            return true;
+    if(!visited[neigh] && cycleRec(visited, inStack, neigh))
+       return true;
    }
    inStack[index] = false;
    return false;
@@ -188,9 +215,9 @@ void Graph::topologicalRec(vector<bool>& visited, int index, vector<int>& orderT
    if(index+1 < voutStart[u+1] && !visited[index+1])
        topologicalRec(visited, index+1, orderTmp);
    for(int i=0; i<vertexList[index].adjList.size(); i++) {
-       int neigh = vertexList[index].adjList[i].first;
+       int neigh = get<0>(vertexList[index].adjList[i]);
        if (!visited[neigh])
-	   topologicalRec(visited, neigh, orderTmp);
+           topologicalRec(visited, neigh, orderTmp);
    }
    orderTmp.push_back(index);
 }
@@ -206,8 +233,8 @@ void Graph::print_adjList(){
 	cout << "(" << vertexList[i].u << ", " << vertexList[i].t << ") "; 
 
 	//print out the destination node
-	int id = vertexList[i].adjList[j].first;
-	int w = vertexList[i].adjList[j].second; 
+	int id = get<0>(vertexList[i].adjList[j]);
+	int w = get<1>(vertexList[i].adjList[j]);
         cout << "(" << vertexList[id].u << ", " << vertexList[id].t << ") ";
 	cout << w << endl; 
      }
@@ -226,8 +253,8 @@ void Graph::initial_query(int numS)
     int s;
     for(int i = 0 ; i < numSources; i++)
     {
-    	s=rand()%V;
-        //s=0; //116834; //0;
+    	//s=rand()%V;
+        s=0; //116834; //0;
         sources.push_back(s);
     }
 
@@ -341,8 +368,8 @@ void Graph::earliest_acyclic(int source){
         if(index+1 < voutStart[u+1] && vertexList[index+1].t <= t_end)
             localDist[index+1] = min(localDist[index], localDist[index+1]);
         for(int j=0; j<vertexList[index].adjList.size(); j++){
-            int neigh = vertexList[index].adjList[j].first;
-            int linkW = vertexList[index].adjList[j].second;
+            int neigh = get<0>(vertexList[index].adjList[j]);
+            int linkW = get<1>(vertexList[index].adjList[j]);
             TTYPE arrivalTime = vertexList[index].t + linkW;
             if(arrivalTime > t_end)
             continue;
@@ -369,23 +396,24 @@ bool Graph::feasible(TTYPE arr, TTYPE dep, int vertIndex)
         return false;
 }
 
+
+//Added by Anuj
 void Graph::linear_combo(int source, std::ofstream& timings){
     Timer t;
-    int c_fmst=1,c_rvsfmst=0,c_fstst=0,c_shrtst=0,c_cst=0,c_hp=2,c_wait=1;
-    //cost is the cost of the dominant path to node (u,t)
+    int c_fmst=1,c_rvsfmst=0,c_fstst=0,c_shrtst=0,c_cst=0,c_hp=2,c_wait=2;
+    //lin is the lin of the dominant path to node (u,t)
     opt_linCombo.resize(V,infinity);
-    vector<pair<TTYPE, TTYPE>> cost(vertexList.size(), make_pair(infinity,infinity));
+    vector<tuple<TTYPE, TTYPE, int>> lin(vertexList.size(), make_tuple(infinity,infinity,-1));//each tuple: lin,extnCrit,spanOfPath.
     vector<TTYPE> arrival(vertexList.size(), infinity);
     t.start();
-    for(int it = voutStart[source]; it < voutStart[source+1]; it++) {
-        if(vertexList[it].t >= t_start && vertexList[it].t <= t_end)
+    for(int i = voutStart[source]; i < voutStart[source+1]; i++) {
+        if(vertexList[i].t >= t_start && vertexList[i].t <= t_end)
         {
-            cost[it] = make_pair(0,0);
-            arrival[it] = vertexList[it].t;
+            lin[i] = make_tuple(0,0,voutStart[source+1]-1);
+            arrival[i] = vertexList[i].t;
         }
     }
     opt_linCombo[source] = 0;
-//    cout << vertexList[tpOrdered[0]].u << endl;
     int maxTpSeen=tpStart[source];
     for(int i=tpStart[source]; i<tpOrdered.size(); i++) {
         int index = tpOrdered[i];
@@ -399,53 +427,95 @@ void Graph::linear_combo(int source, std::ofstream& timings){
         if(vertexList[index].t > t_end)
            continue;
         //first, take care of the next chain neighbors
-        //Assign the same cost to all chain nbrs if this path dominates over the dominant path on the chain nbr.
-        if (u != source)
+        //Assign the same lin to nxt chain nbr if this path dominates over the dominant path on the chain nbr.
+        int chainIndx = index+1;
+        if (( chainIndx < voutStart[u+1]) && (vertexList[chainIndx].tpPos > maxTpSeen))
+            maxTpSeen=vertexList[chainIndx].tpPos;
+        if ((u != source) && (chainIndx < voutStart[u+1]))
         {
-            TTYPE indx_crit = cost[index].second; //cost[index]-(c_fmst+c_fstst+c_wait)*arrival[index];
-            int chainIndx = index+1;
-            if(chainIndx < voutStart[u+1]) {
-                if ((indx_crit < cost[chainIndx].second) && (feasible(arrival[index], vertexList[chainIndx].t, u))) {
-                    cost[chainIndx]=cost[index];
-                    arrival[chainIndx]=arrival[index];
-                    if (vertexList[chainIndx].tpPos > maxTpSeen)
-                        maxTpSeen=vertexList[chainIndx].tpPos;
+//            TTYPE indx_crit = get<1>(lin[index]); //lin[index]-(c_fmst+c_fstst+c_wait)*arrival[index];
+            int idxToCheck = chainIndx;
+            tuple<TTYPE, TTYPE, int> checkLin = lin[index];
+            TTYPE checkArrival = arrival[index];
+            bool done = false;
+            while ((!done) && (idxToCheck < get<2>(checkLin))) {
+                if ((arrival[idxToCheck] == infinity) ||
+                    ((get<1>(checkLin) == get<1>(lin[idxToCheck]) ) && (get<2>(checkLin) > get<2>(lin[idxToCheck])))
+                    )       {
+                    lin[idxToCheck] = checkLin;
+                    arrival[idxToCheck] = checkArrival;
+                    done = true;
+                }
+                else {
+                    if (get<1>(checkLin) < get<1>(lin[idxToCheck])) {
+                        tuple<TTYPE, TTYPE, int> tmpLin = lin[idxToCheck];
+                        TTYPE tmpArr = arrival[idxToCheck];
+                        lin[idxToCheck] = checkLin;
+                        arrival[idxToCheck]=checkArrival;
+                        checkLin=tmpLin;
+                        checkArrival = tmpArr;
+                        idxToCheck = get<2>(lin[idxToCheck]);
+                    }
+                    else {
+                        idxToCheck = get<2>(lin[idxToCheck]);
+                    }
                 }
             }
         }
+            //else is not needed as span of this won't be greater than the span of neighbor.
         //now, take care of the other neighbors
         for(int j=0; j<vertexList[index].adjList.size(); j++)  {
-            int neighNodeTr = vertexList[index].adjList[j].first;
+            int neighNodeTr = get<0>(vertexList[index].adjList[j]);
             int v = vertexList[neighNodeTr].u;
-            if (v==source)      //There is never any benefit of coming back to the source. Cost is already 0 at source vertex.
+            if (v==source)      //There is never any benefit of coming back to the source. lin is already 0 at source vertex.
                 continue;
-            int linkW = vertexList[index].adjList[j].second;
+            int linkW = get<1>(vertexList[index].adjList[j]);
             TTYPE newArrivalTime = vertexList[index].t + linkW;
             if (newArrivalTime > t_end)
                continue;
             if (vertexList[neighNodeTr].tpPos > maxTpSeen)
                 maxTpSeen=vertexList[neighNodeTr].tpPos;
-            TTYPE newCost;
+            TTYPE newLinVal;
             if (u== source)
-                newCost = c_fmst*newArrivalTime + c_rvsfmst*-1*vertexList[index].t + c_fstst*(newArrivalTime-vertexList[index].t)
-                        + c_shrtst*1+c_cst*1+c_hp + c_wait*0;
+                newLinVal = c_fmst*newArrivalTime + c_rvsfmst*-1*vertexList[index].t + c_fstst*(newArrivalTime-vertexList[index].t)
+                        + c_shrtst*linkW+c_cst*1+c_hp + c_wait*0;
             else
-                newCost = cost[index].first - (c_fmst+c_fstst+c_wait)*arrival[index]
+                newLinVal = get<0>(lin[index]) - (c_fmst+c_fstst+c_wait)*arrival[index]
                             + (c_fmst+c_fstst)*newArrivalTime
-                            + c_shrtst*1+ c_cst*1 + c_hp + c_wait*vertexList[index].t;
+                            + c_shrtst*linkW+ c_cst*1 + c_hp + c_wait*vertexList[index].t;
             
-            if (newCost < opt_linCombo[v])
-                opt_linCombo[v]=newCost;
-            if (!(feasible(newArrivalTime,vertexList[neighNodeTr].t, v)))
-                continue;
-            TTYPE newCostCrit = newCost-(c_fmst+c_fstst+c_wait)*newArrivalTime;
-            if (newCostCrit < cost[neighNodeTr].second) {
-                cost[neighNodeTr].first=newCost; cost[neighNodeTr].second=newCostCrit;
-                arrival[neighNodeTr]=newArrivalTime;
+            if (newLinVal < opt_linCombo[v])
+                opt_linCombo[v]=newLinVal;
+            TTYPE newLinCrit = newLinVal-(c_fmst+c_fstst+c_wait)*newArrivalTime;
+            bool done = false;
+            tuple<TTYPE, TTYPE, int> checkLin=make_tuple(newLinVal, newLinCrit, get<2>(vertexList[index].adjList[j]));
+            TTYPE checkArrival=newArrivalTime;
+            int idxToCheck=neighNodeTr;
+            while ((!done) && (idxToCheck < get<2>(checkLin))) {
+                if ((arrival[idxToCheck] == infinity) ||
+                    ((get<1>(checkLin) == get<1>(lin[idxToCheck]) ) && (get<2>(checkLin) > get<2>(lin[idxToCheck])))
+                    )  {
+                    lin[idxToCheck]=checkLin;
+                    arrival[idxToCheck]=checkArrival;
+                    done = true;
+                }
+                else {
+                    if (get<1>(checkLin) < get<1>(lin[idxToCheck]))  {
+                        tuple<TTYPE, TTYPE, int> tmpLin = lin[idxToCheck];
+                        TTYPE tmpArr = arrival[idxToCheck];
+                        lin[idxToCheck] = checkLin;
+                        arrival[idxToCheck]=checkArrival;
+                        checkLin=tmpLin;
+                        checkArrival = tmpArr;
+                        idxToCheck = get<2>(lin[idxToCheck]);
+                    }
+                    else {
+                        idxToCheck = get<2>(lin[idxToCheck]);
+                    }
+                }
             }
         }
     }
-
     t.stop();
     time_sum += t.GetRuntime();
     timings << source << "   " << t.GetRuntime() << endl;
@@ -565,9 +635,9 @@ void Graph::fastest(int source)
 	    int node = st.top(); 
 	    st.pop();
 	    for(auto neighbor=vertexList[node].adjList.begin(); neighbor!=vertexList[node].adjList.end(); neighbor++){
-		int nID = neighbor->first; 	
+		int nID = get<0>(*neighbor);
 		Node neiNode = vertexList[nID];
-		TTYPE inTime = vertexList[node].t + neighbor->second;
+            TTYPE inTime = vertexList[node].t + get<1>(*neighbor);
 		if(inTime <= t_end){
 		   if((inTime-ts) < distances[neiNode.u])
 			 distances[neiNode.u] = (inTime-ts);
@@ -628,8 +698,8 @@ void Graph::fastest_acyclic(int source){
 	}
 	//now, take care of the other neighbors
 	for(int j=0; j<vertexList[index].adjList.size(); j++){
-	    int neigh = vertexList[index].adjList[j].first;
-	    int linkW = vertexList[index].adjList[j].second;
+	    int neigh = get<0>(vertexList[index].adjList[j]);
+	    int linkW = get<1>(vertexList[index].adjList[j]);
 	    TTYPE arrivalTime = vertexList[index].t + linkW;
 	    if(arrivalTime > t_end)
 		continue; 	    
@@ -748,8 +818,8 @@ void Graph::shortest_acyclic(int source){
 	   localDist[index+1] = min(localDist[index+1], localDist[index]);
 	//now, take care of the other neighbors
 	for(int j=0; j<vertexList[index].adjList.size(); j++){
-	   int neigh = vertexList[index].adjList[j].first;
-	   int linkW = vertexList[index].adjList[j].second;
+	   int neigh = get<0>(vertexList[index].adjList[j]);
+	   int linkW = get<1>(vertexList[index].adjList[j]);
 	   if(vertexList[neigh].t + linkW > t_end)
 		continue;
 	   localDist[neigh] = min(localDist[index]+linkW, localDist[neigh]);
@@ -829,9 +899,9 @@ void Graph::minhop(int source)
 	    //try all feasible touts from u not tried before 
 	    for(int uu = eout[u]; uu < voutStart[u+1] && vertexList[uu].t <= t_end && !visited[uu]; uu++){
 		visited[uu] = true;
-		vector<pair<int, int>> x = vertexList[uu].adjList;
+		vector<tuple<int, int, int>> x = vertexList[uu].adjList;
 		for(int it=0; it<x.size(); it++){
-		    int neigh = x[it].first; //new index
+		    int neigh = get<0>(x[it]); //new index
 		    TTYPE tOut = vertexList[neigh].t;
 		    int vv = vertexList[neigh].u; //old index
 		    if(tOut < vertexList[newEout[vv]].t){ 
@@ -897,8 +967,8 @@ void Graph::minhop_acyclic(int source){
 	   localDist[index+1] = min(localDist[index+1], localDist[index]);
 	//now, take care of the other neighbors
 	for(int j=0; j<vertexList[index].adjList.size(); j++){
-	   int neigh = vertexList[index].adjList[j].first;
-	   TTYPE arrivalTime = vertexList[index].t + vertexList[index].adjList[j].second;
+	   int neigh = get<0>(vertexList[index].adjList[j]);
+	   TTYPE arrivalTime = vertexList[index].t + get<1>(vertexList[index].adjList[j]);
 	   if(arrivalTime > t_end)
 		continue;
 	   localDist[neigh] = min(localDist[index]+1, localDist[neigh]);
